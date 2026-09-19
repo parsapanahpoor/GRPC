@@ -4,7 +4,7 @@ using GrpcDemo.Contracts;
 namespace GrpcDemo.ConsoleClient.Demos;
 
 /// <summary>
-/// Server Streaming: یک درخواست → چند پاسخ پشت‌سرهم از سرور
+/// Server Streaming: one request -> many responses from server
 /// </summary>
 public static class ServerStreamingDemo
 {
@@ -12,7 +12,7 @@ public static class ServerStreamingDemo
     {
         Console.WriteLine();
         Console.WriteLine("=== Server Streaming: StreamTransactions ===");
-        Console.WriteLine("یک درخواست می‌فرستیم؛ سرور چند Transaction با Delay برمی‌گرداند.");
+        Console.WriteLine("Sending one request; server returns transactions with delay.");
         Console.WriteLine();
 
         var request = new StreamTransactionsRequest
@@ -21,16 +21,14 @@ public static class ServerStreamingDemo
             Limit = 4
         };
 
-        // باز کردن استریم سمت سرور
         using var call = client.StreamTransactions(request);
 
-        // خواندن پیام‌ها یکی‌یکی تا استریم تمام شود
         await foreach (var tx in call.ResponseStream.ReadAllAsync())
         {
             Console.WriteLine(
-                $"  ← [{tx.Type}] {tx.Amount:N0} — {tx.Description}");
+                $"  <- [{tx.Type}] {tx.Amount:N0} - {tx.Description}");
         }
 
-        Console.WriteLine("استریم سرور تمام شد.");
+        Console.WriteLine("Server stream completed.");
     }
 }

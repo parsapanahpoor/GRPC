@@ -3,8 +3,8 @@ using GrpcDemo.Contracts;
 namespace GrpcDemo.ConsoleClient.Demos;
 
 /// <summary>
-/// Client Streaming: چند درخواست از کلاینت → یک پاسخ نهایی از سرور
-/// نکته مهم: بعد از آخرین Write حتماً CompleteAsync
+/// Client Streaming: many client requests -> one final server response
+/// Important: call CompleteAsync after the last Write
 /// </summary>
 public static class ClientStreamingDemo
 {
@@ -12,7 +12,7 @@ public static class ClientStreamingDemo
     {
         Console.WriteLine();
         Console.WriteLine("=== Client Streaming: DepositBatch ===");
-        Console.WriteLine("چند واریز می‌فرستیم؛ آخر کار یک خلاصه می‌گیریم.");
+        Console.WriteLine("Sending several deposits; then receiving one summary.");
         Console.WriteLine();
 
         using var call = client.DepositBatch();
@@ -27,15 +27,14 @@ public static class ClientStreamingDemo
                 Amount = amount
             });
 
-            Console.WriteLine($"  → واریز ارسال شد: {amount:N0}");
-            await Task.Delay(1500); // فقط برای دیده شدن در ارائه
+            Console.WriteLine($"  -> deposit sent: {amount:N0}");
+            await Task.Delay(1500); // visible pacing for the presentation
         }
 
-        // بدون این خط، سرور معمولاً تا ابد منتظر پیام بعدی می‌ماند
         await call.RequestStream.CompleteAsync();
-        Console.WriteLine("  → CompleteAsync()");
+        Console.WriteLine("  -> CompleteAsync()");
 
         var result = await call;
-        Console.WriteLine($"  ← خلاصه: تعداد={result.Count} | جمع={result.TotalAmount:N0}");
+        Console.WriteLine($"  <- summary: count={result.Count} | total={result.TotalAmount:N0}");
     }
 }

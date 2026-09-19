@@ -2,18 +2,16 @@ using Grpc.Net.Client;
 using GrpcDemo.ConsoleClient.Demos;
 using GrpcDemo.Contracts;
 
-// برای HTTP بدون TLS روی localhost (دمو)
+// Allow unencrypted HTTP/2 on localhost (demo only)
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-
-Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 const string serverAddress = "http://localhost:5051";
 
 Console.WriteLine("========================================");
-Console.WriteLine("  gRPC Console Client — برای توضیح کد");
-Console.WriteLine("  Blazor = UI  |  این پروژه = کد خوانا");
+Console.WriteLine("  gRPC Console Client - code walkthrough");
+Console.WriteLine("  Blazor = UI  |  Console = readable code");
 Console.WriteLine("========================================");
-Console.WriteLine($"سرور: {serverAddress}");
+Console.WriteLine($"Server: {serverAddress}");
 Console.WriteLine();
 
 using var channel = GrpcChannel.ForAddress(serverAddress);
@@ -22,14 +20,14 @@ var client = new AccountService.AccountServiceClient(channel);
 while (true)
 {
     Console.WriteLine("""
-        ---- منو ----
-        1) Unary          — GetBalance (+ Headers / Deadline)
-        2) Server Stream  — StreamTransactions
-        3) Client Stream  — DepositBatch
-        4) Bidirectional  — Chat
-        0) خروج
+        ---- Menu ----
+        1) Unary          - GetBalance (+ Headers / Deadline)
+        2) Server Stream  - StreamTransactions
+        3) Client Stream  - DepositBatch
+        4) Bidirectional  - Chat
+        0) Exit
         """);
-    Console.Write("انتخاب: ");
+    Console.Write("Select: ");
     var choice = Console.ReadLine()?.Trim();
 
     try
@@ -51,14 +49,14 @@ while (true)
             case "0":
                 return;
             default:
-                Console.WriteLine("گزینه نامعتبر.");
+                Console.WriteLine("Invalid option.");
                 break;
         }
     }
     catch (Exception ex)
     {
         Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine($"خطا: {ex.Message}");
+        Console.WriteLine($"Error: {ex.Message}");
         Console.ResetColor();
     }
 

@@ -4,8 +4,8 @@ using GrpcDemo.Contracts;
 namespace GrpcDemo.ConsoleClient.Demos;
 
 /// <summary>
-/// Bidirectional Streaming: چت‌روم
-/// کانال باز می‌ماند؛ کلاینت و سرور هم‌زمان پیام رد و بدل می‌کنند
+/// Bidirectional Streaming: chat room
+/// Channel stays open; client and server exchange messages concurrently
 /// </summary>
 public static class ChatDemo
 {
@@ -13,28 +13,25 @@ public static class ChatDemo
     {
         Console.WriteLine();
         Console.WriteLine("=== Bidirectional: Chat ===");
-        Console.WriteLine("چند پیام می‌فرستیم؛ پشتیبان روی همان استریم جواب می‌دهد.");
-        Console.WriteLine("برای پایان، خالی Enter بزنید.");
+        Console.WriteLine("Sending messages; support replies on the same stream.");
         Console.WriteLine();
 
         using var call = client.Chat();
 
-        // حلقهٔ خواندن پاسخ‌های سرور (هم‌زمان با نوشتن)
         var readTask = Task.Run(async () =>
         {
             await foreach (var msg in call.ResponseStream.ReadAllAsync())
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"  ← {msg.User} ({msg.SentAt}): {msg.Text}");
+                Console.WriteLine($"  <- {msg.User} ({msg.SentAt}): {msg.Text}");
                 Console.ResetColor();
             }
         });
 
-        // چند پیام نمونه برای ارائه (بدون تایپ دستی)
         string[] demoMessages =
         [
-            "سلام، موجودی حسابم چند است؟",
-            "ممنون. پس gRPC دوطرفه یعنی همین کانال باز؟"
+            "Hi, what is my account balance?",
+            "Thanks. So bidirectional gRPC means this open channel?"
         ];
 
         foreach (var text in demoMessages)
@@ -42,21 +39,21 @@ public static class ChatDemo
             var now = DateTime.Now.ToString("HH:mm:ss");
             await call.RequestStream.WriteAsync(new ChatMessage
             {
-                User = "ارائه‌دهنده",
+                User = "Presenter",
                 Text = text,
                 SentAt = now
             });
 
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"  → من ({now}): {text}");
+            Console.WriteLine($"  -> Me ({now}): {text}");
             Console.ResetColor();
 
-            await Task.Delay(2000); // فرصت دیدن جواب پشتیبان
+            await Task.Delay(2000);
         }
 
         await call.RequestStream.CompleteAsync();
         await readTask;
 
-        Console.WriteLine("چت بسته شد.");
+        Console.WriteLine("Chat closed.");
     }
 }

@@ -21,7 +21,7 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         ServerCallContext context)
     {
         var correlationId = context.RequestHeaders.GetValue("x-correlation-id");
-        Console.WriteLine($"GetBalance | correlation-id={correlationId ?? "ندارد"}");
+        Console.WriteLine($"GetBalance | correlation-id={correlationId ?? "n/a"}");
 
         var delayHeader = context.RequestHeaders.GetValue("x-demo-delay-ms");
         if (int.TryParse(delayHeader, out var delayMs) && delayMs > 0)
@@ -34,7 +34,7 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         {
             throw new RpcException(new Status(
                 StatusCode.NotFound,
-                $"حساب {request.AccountNumber} پیدا نشد."));
+                $"Account {request.AccountNumber} was not found."));
         }
 
         return new GetBalanceResponse
@@ -64,7 +64,7 @@ public class AccountGrpcService : AccountService.AccountServiceBase
                 AccountNumber = request.AccountNumber,
                 Amount = 100_000 * i,
                 Type = i % 2 == 0 ? "Credit" : "Debit",
-                Description = $"تراکنش نمونه #{i} از {limit}"
+                Description = $"Sample transaction #{i} of {limit}"
             });
         }
     }
@@ -86,7 +86,7 @@ public class AccountGrpcService : AccountService.AccountServiceBase
             Balances[deposit.AccountNumber] += deposit.Amount;
             count++;
             total += deposit.Amount;
-            Console.WriteLine($"DepositBatch | دریافت #{count}: {deposit.Amount:N0}");
+            Console.WriteLine($"DepositBatch | received #{count}: {deposit.Amount:N0}");
         }
 
         return new DepositBatchResponse
@@ -103,8 +103,8 @@ public class AccountGrpcService : AccountService.AccountServiceBase
     {
         await responseStream.WriteAsync(new ChatMessage
         {
-            User = "پشتیبان",
-            Text = "به چت‌روم gRPC خوش آمدید. پیام بفرستید؛ من اینجا هستم.",
+            User = "Support",
+            Text = "Welcome to the gRPC chat room. Send a message; I am here.",
             SentAt = DateTime.Now.ToString("HH:mm:ss")
         });
 
@@ -116,8 +116,8 @@ public class AccountGrpcService : AccountService.AccountServiceBase
 
             await responseStream.WriteAsync(new ChatMessage
             {
-                User = "پشتیبان",
-                Text = $"دریافت شد: «{incoming.Text}» — این پاسخ روی همان استریم دوطرفه آمد.",
+                User = "Support",
+                Text = $"Received: \"{incoming.Text}\" — reply on the same bidirectional stream.",
                 SentAt = DateTime.Now.ToString("HH:mm:ss")
             });
         }
