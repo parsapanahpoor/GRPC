@@ -1,0 +1,24 @@
+@page "/"
+
+<section class="info">
+    <h2>خانه — نقشهٔ دمو</h2>
+    <p class="hint">هر تب یک الگوی gRPC است. روی صحنه به‌ترتیب از ۱ تا ۴ بروید.</p>
+    <div class="home-links">
+        <a href="unary">
+            <strong>1. Unary + Headers + Deadline</strong><br />
+            موجودی + correlation-id + دموی DeadlineExceeded
+        </a>
+        <a href="server-stream">
+            <strong>2. Server Streaming</strong><br />
+            یک درخواست → چند پاسخ با تأخیر محسوس (~۱.۵ ثانیه)
+        </a>
+        <a href="client-stream">
+            <strong>3. Client Streaming</strong><br />
+            چند درخواست از کلاینت → یک خلاصهٔ نهایی
+        </a>
+        <a href="chat">
+            <strong>4. Bidirectional — چت‌روم</strong><br />
+            کانال باز؛ شما و پشتیبان هم‌زمان پیام رد و بدل می‌کنید
+        </a>
+    </div>
+</section>

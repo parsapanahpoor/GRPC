@@ -1,0 +1,184 @@
+@page "/chat"
+@using Grpc.Core
+@using GrpcDemo.Contracts
+@inject AccountService.AccountServiceClient Grpc
+@implements IAsyncDisposable
+
+<section class="info">
+    <h2>Bidirectional Streaming — چت‌روم</h2>
+    <ul>
+        <li>برخلاف سه حالت قبل، اینجا <strong>کانال باز می‌ماند</strong></li>
+        <li>شما چند پیام می‌فرستید؛ پشتیبان هم هم‌زمان روی همان تماس جواب می‌دهد</li>
+        <li>نیازی نیست برای هر پیام تماس جدید باز شود — این یعنی BiDi</li>
+        <li>پاسخ پشتیبان با تأخیر حدود <strong>۱.۲ ثانیه</strong> می‌آید (<code>Task.Delay</code> در متد <code>Chat</code> سرور)</li>
+        <li>متد: <code>Chat</code></li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>اتاق گفتگو</h2>
+    <p class="status @(connected ? "" : "off")">
+        @(connected ? "متصل به چت‌روم (استریم دوطرفه فعال است)" : "هنوز متصل نیستید — اول «ورود به چت» را بزنید")
+    </p>
+
+    <div class="chat-box">
+        @foreach (var msg in messages)
+        {
+            <div class="bubble @(msg.IsMe ? "me" : "bot")">
+                <div class="meta">@msg.User — @msg.SentAt</div>
+                <div>@msg.Text</div>
+            </div>
+        }
+    </div>
+
+    <label>نام شما</label>
+    <input @bind="userName" disabled="@connected" />
+
+    <label>پیام</label>
+    <div class="chat-compose">
+        <input @bind="draft" @bind:event="oninput" disabled="@(!connected || busySend)"
+               @onkeydown="OnKeyDown" placeholder="پیام را بنویسید و Enter بزنید..." />
+        <button disabled="@(!connected || busySend || string.IsNullOrWhiteSpace(draft))"
+                @onclick="SendAsync">ارسال</button>
+    </div>
+
+    <div class="actions" style="margin-top:0.75rem">
+        @if (!connected)
+        {
+            <button disabled="@busyConnect" @onclick="ConnectAsync">ورود به چت</button>
+        }
+        else
+        {
+            <button class="danger" @onclick="DisconnectAsync">خروج از چت</button>
+        }
+    </div>
+</section>
+
+@code {
+    private string userName = "کاربر";
+    private string draft = "";
+    private bool connected;
+    private bool busyConnect;
+    private bool busySend;
+
+    private AsyncDuplexStreamingCall<ChatMessage, ChatMessage>? _call;
+    private CancellationTokenSource? _readCts;
+    private Task? _readTask;
+    private readonly List<UiMessage> messages = new();
+
+    private async Task ConnectAsync()
+    {
+        if (connected || busyConnect) return;
+        busyConnect = true;
+        try
+        {
+            _call = Grpc.Chat();
+            _readCts = new CancellationTokenSource();
+            _readTask = ReadLoopAsync(_readCts.Token);
+            connected = true;
+            messages.Clear();
+            AddSystem("استریم دوطرفه باز شد. می‌توانید چند پیام پشت‌سرهم بفرستید.");
+        }
+        catch (Exception ex)
+        {
+            AddSystem($"اتصال برقرار نشد: {ex.Message}");
+            await CleanupCallAsync();
+        }
+        finally
+        {
+            busyConnect = false;
+        }
+    }
+
+    private async Task SendAsync()
+    {
+        if (!connected || _call is null || string.IsNullOrWhiteSpace(draft) || busySend)
+            return;
+
+        busySend = true;
+        var text = draft.Trim();
+        draft = "";
+        try
+        {
+            var now = DateTime.Now.ToString("HH:mm:ss");
+            messages.Add(new UiMessage(userName, text, now, IsMe: true));
+            await InvokeAsync(StateHasChanged);
+
+            await _call.RequestStream.WriteAsync(new ChatMessage
+            {
+                User = userName,
+                Text = text,
+                SentAt = now
+            });
+        }
+        catch (RpcException ex)
+        {
+            AddSystem($"خطا در ارسال: {ex.StatusCode}");
+        }
+        finally
+        {
+            busySend = false;
+        }
+    }
+
+    private async Task DisconnectAsync()
+    {
+        try
+        {
+            if (_call is not null)
+                await _call.RequestStream.CompleteAsync();
+        }
+        catch { /* ignore */ }
+
+        _readCts?.Cancel();
+        if (_readTask is not null)
+        {
+            try { await _readTask; } catch { /* ignore */ }
+        }
+
+        await CleanupCallAsync();
+        connected = false;
+        AddSystem("از چت خارج شدید — استریم بسته شد.");
+    }
+
+    private async Task ReadLoopAsync(CancellationToken token)
+    {
+        try
+        {
+            await foreach (var msg in _call!.ResponseStream.ReadAllAsync(token))
+            {
+                messages.Add(new UiMessage(msg.User, msg.Text, msg.SentAt, IsMe: false));
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (RpcException) { }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await SendAsync();
+    }
+
+    private void AddSystem(string text) =>
+        messages.Add(new UiMessage("سیستم", text, DateTime.Now.ToString("HH:mm:ss"), IsMe: false));
+
+    private async Task CleanupCallAsync()
+    {
+        _readCts?.Dispose();
+        _readCts = null;
+        _call?.Dispose();
+        _call = null;
+        _readTask = null;
+        await Task.CompletedTask;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _readCts?.Cancel();
+        await CleanupCallAsync();
+    }
+
+    private sealed record UiMessage(string User, string Text, string SentAt, bool IsMe);
+}

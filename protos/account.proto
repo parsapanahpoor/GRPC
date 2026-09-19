@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcDemo.Contracts";
+
+package account;
+
+service AccountService {
+  // Unary: یک درخواست → یک پاسخ
+  rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+
+  // Server streaming: یک درخواست → چند پاسخ پشت‌سرهم
+  rpc StreamTransactions (StreamTransactionsRequest) returns (stream Transaction);
+
+  // Client streaming: چند درخواست → یک پاسخ نهایی
+  rpc DepositBatch (stream DepositRequest) returns (DepositBatchResponse);
+
+  // Bidirectional: چت‌روم — هر دو طرف هم‌زمان پیام می‌فرستند
+  rpc Chat (stream ChatMessage) returns (stream ChatMessage);
+}
+
+message GetBalanceRequest {
+  string account_number = 1;
+}
+
+message GetBalanceResponse {
+  string account_number = 1;
+  double balance = 2;
+  string currency = 3;
+}
+
+message StreamTransactionsRequest {
+  string account_number = 1;
+  int32 limit = 2;
+}
+
+message Transaction {
+  string id = 1;
+  string account_number = 2;
+  double amount = 3;
+  string type = 4;
+  string description = 5;
+}
+
+message DepositRequest {
+  string account_number = 1;
+  double amount = 2;
+}
+
+message DepositBatchResponse {
+  int32 count = 1;
+  double total_amount = 2;
+}
+
+message ChatMessage {
+  string user = 1;
+  string text = 2;
+  string sent_at = 3;
+}

@@ -1,0 +1,113 @@
+@page "/unary"
+@using Grpc.Core
+@using GrpcDemo.Contracts
+@inject AccountService.AccountServiceClient Grpc
+
+<section class="info">
+    <h2>Unary + Metadata + Deadline</h2>
+    <ul>
+        <li><strong>Headers (Metadata):</strong> همراه تماس می‌آیند؛ جزو بدنهٔ <code>.proto</code> نیستند</li>
+        <li><strong>correlation-id:</strong> برای ردگیری یک درخواست بین سرویس‌ها</li>
+        <li><strong>Deadline:</strong> سقف زمان تماس؛ اگر دیر شود → <code>DeadlineExceeded</code></li>
+        <li><strong>Trailers:</strong> متادیتای پایان پاسخ (اینجا از Interceptor برمی‌گردد)</li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>اجرای دمو</h2>
+    <label>شماره حساب</label>
+    <input @bind="accountNumber" />
+
+    <label>x-correlation-id (Header)</label>
+    <input @bind="correlationId" />
+
+    <label>Deadline (ثانیه)</label>
+    <input type="number" @bind="deadlineSeconds" min="1" max="30" />
+
+    <label>تأخیر عمدی سرور — هدر x-demo-delay-ms (میلی‌ثانیه، ۰ = بدون تأخیر)</label>
+    <input type="number" @bind="demoDelayMs" min="0" max="10000" step="500" />
+
+    <div class="actions">
+        <button disabled="@busy" @onclick="() => CallAsync(normal: true)">فراخوانی عادی</button>
+        <button class="danger" disabled="@busy" @onclick="() => CallAsync(normal: false)">
+            دموی DeadlineExceeded
+        </button>
+        <button class="secondary" @onclick="NewCorrelation">correlation جدید</button>
+        <button class="secondary" @onclick="ClearLog">پاک کردن لاگ</button>
+    </div>
+    <p class="hint">
+        دکمهٔ قرمز: Deadline=۱ ثانیه و تأخیر سرور=۳ ثانیه → عمداً زمان تمام می‌شود.
+    </p>
+</section>
+
+<section class="log-card">
+    <h2>لاگ (Headers / Body / Trailers)</h2>
+    <pre class="log">@string.Join("\n", logs)</pre>
+</section>
+
+@code {
+    private string accountNumber = "1001";
+    private string correlationId = Guid.NewGuid().ToString("N")[..8];
+    private int deadlineSeconds = 5;
+    private int demoDelayMs;
+    private bool busy;
+    private readonly List<string> logs = new();
+
+    private async Task CallAsync(bool normal)
+    {
+        if (busy) return;
+        busy = true;
+
+        var deadlineSec = normal ? deadlineSeconds : 1;
+        var delayMs = normal ? demoDelayMs : 3000;
+
+        try
+        {
+            var headers = new Metadata
+            {
+                { "x-correlation-id", correlationId },
+                { "x-demo-delay-ms", delayMs.ToString() }
+            };
+
+            Log("——— شروع Unary ———");
+            Log($"Headers → x-correlation-id = {correlationId}");
+            Log($"Headers → x-demo-delay-ms = {delayMs}");
+            Log($"Deadline → {deadlineSec} ثانیه (UTC)");
+            Log($"Body    → GetBalanceRequest {{ account_number = {accountNumber} }}");
+            await InvokeAsync(StateHasChanged);
+
+            var deadline = DateTime.UtcNow.AddSeconds(deadlineSec);
+            using var call = Grpc.GetBalanceAsync(
+                new GetBalanceRequest { AccountNumber = accountNumber },
+                headers: headers,
+                deadline: deadline);
+
+            var response = await call.ResponseAsync;
+            var trailers = call.GetTrailers();
+
+            Log($"Body    ← balance = {response.Balance:N0} {response.Currency}");
+            Log($"Trailers← x-correlation-id = {trailers.GetValue("x-correlation-id") ?? "-"}");
+            Log($"Trailers← x-processed-by   = {trailers.GetValue("x-processed-by") ?? "-"}");
+            Log("——— پایان موفق ———");
+        }
+        catch (RpcException ex)
+        {
+            Log($"خطا gRPC ← {ex.StatusCode}");
+            Log($"Detail  ← {ex.Status.Detail}");
+            if (ex.StatusCode == StatusCode.DeadlineExceeded)
+                Log("یعنی Deadline زودتر از تمام‌شدن کار سرور رسید.");
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void NewCorrelation() =>
+        correlationId = Guid.NewGuid().ToString("N")[..8];
+
+    private void Log(string message) =>
+        logs.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+
+    private void ClearLog() => logs.Clear();
+}

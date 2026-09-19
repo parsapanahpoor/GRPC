@@ -1,0 +1,18 @@
+@inherits LayoutComponentBase
+
+<div class="page">
+    <header>
+        <h1>gRPC Demo Room</h1>
+        <p>چهار الگوی فراخوانی — هر تب یک متد، با توضیح و دموی زنده</p>
+        <nav class="tabs">
+            <NavLink href="/" Match="NavLinkMatch.All">خانه</NavLink>
+            <NavLink href="/unary">1. Unary / Headers</NavLink>
+            <NavLink href="/server-stream">2. Server Stream</NavLink>
+            <NavLink href="/client-stream">3. Client Stream</NavLink>
+            <NavLink href="/chat">4. BiDi — چت</NavLink>
+        </nav>
+    </header>
+    <main>
+        @Body
+    </main>
+</div>

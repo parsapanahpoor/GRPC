@@ -1,0 +1,92 @@
+@page "/client-stream"
+@using Grpc.Core
+@using GrpcDemo.Contracts
+@inject AccountService.AccountServiceClient Grpc
+
+<section class="info">
+    <h2>Client Streaming</h2>
+    <ul>
+        <li>کلاینت چند پیام را یکی‌یکی می‌فرستد</li>
+        <li>سرور همه را می‌خواند و در پایان <strong>یک</strong> پاسخ خلاصه برمی‌گرداند</li>
+        <li>بین هر واریز حدود <strong>۱.۵ ثانیه</strong> Delay روی کلاینت و همین‌قدر روی سرور (برای دیده شدن فرآیند)</li>
+        <li>جای Delay کلاینت: <code>ClientStreaming.razor</code> — جای Delay سرور: <code>DepositBatch</code></li>
+        <li>متد: <code>DepositBatch</code> — بعد از آخرین پیام حتماً <code>CompleteAsync</code></li>
+    </ul>
+</section>
+
+<section class="card">
+    <h2>اجرای دمو</h2>
+    <label>شماره حساب</label>
+    <input @bind="accountNumber" />
+    <label>مبالغ واریز (با کاما جدا کنید)</label>
+    <input @bind="depositAmounts" />
+    <div class="actions">
+        <button disabled="@busy" @onclick="DepositBatchAsync">ارسال استریم کلاینت</button>
+        <button class="secondary" @onclick="ClearLog">پاک کردن لاگ</button>
+    </div>
+</section>
+
+<section class="log-card">
+    <h2>لاگ زنده</h2>
+    <pre class="log">@string.Join("\n", logs)</pre>
+</section>
+
+@code {
+    private string accountNumber = "1001";
+    private string depositAmounts = "500000,250000,100000";
+    private bool busy;
+    private readonly List<string> logs = new();
+
+    private async Task DepositBatchAsync()
+    {
+        if (busy) return;
+        busy = true;
+        try
+        {
+            var amounts = depositAmounts
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(double.Parse)
+                .ToList();
+
+            Log($"→ باز کردن استریم؛ قرار است {amounts.Count} واریز ارسال شود...");
+            await InvokeAsync(StateHasChanged);
+
+            using var call = Grpc.DepositBatch();
+            var i = 0;
+            foreach (var amount in amounts)
+            {
+                i++;
+                await call.RequestStream.WriteAsync(new DepositRequest
+                {
+                    AccountNumber = accountNumber,
+                    Amount = amount
+                });
+                Log($"→ واریز #{i} ارسال شد: {amount:N0}");
+                await InvokeAsync(StateHasChanged);
+
+                // فاصله عمدی تا جریان ارسال دیده شود
+                await Task.Delay(1500);
+            }
+
+            Log("→ CompleteAsync — به سرور می‌گوییم پیام دیگری نیست");
+            await call.RequestStream.CompleteAsync();
+            await InvokeAsync(StateHasChanged);
+
+            var result = await call;
+            Log($"← پاسخ نهایی یکتا: تعداد={result.Count} | جمع={result.TotalAmount:N0}");
+        }
+        catch (RpcException ex)
+        {
+            Log($"خطا: {ex.StatusCode} — {ex.Status.Detail}");
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private void Log(string message) =>
+        logs.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+
+    private void ClearLog() => logs.Clear();
+}

@@ -1,0 +1,25 @@
+@page "/"
+@namespace GrpcDemo.Client.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gRPC Demo Room</title>
+    <base href="~/" />
+    <link href="css/site.css" rel="stylesheet" />
+    <style>
+        html, body {
+            font-family: "B Nazanin", "BNazanin", Tahoma, sans-serif !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <component type="typeof(App)" render-mode="ServerPrerendered" />
+    </div>
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>
