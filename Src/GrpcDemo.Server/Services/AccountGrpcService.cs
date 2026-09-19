@@ -23,7 +23,6 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         var correlationId = context.RequestHeaders.GetValue("x-correlation-id");
         Console.WriteLine($"GetBalance | correlation-id={correlationId ?? "ندارد"}");
 
-        // برای دموی Deadline: اگر کلاینت هدر x-demo-delay-ms بفرستد، عمداً کند می‌شویم
         var delayHeader = context.RequestHeaders.GetValue("x-demo-delay-ms");
         if (int.TryParse(delayHeader, out var delayMs) && delayMs > 0)
         {
@@ -57,7 +56,6 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         {
             context.CancellationToken.ThrowIfCancellationRequested();
 
-            // فاصله قبل از هر پیام تا جریان یکی‌یکی حس شود
             await Task.Delay(StreamDelayMs, context.CancellationToken);
 
             await responseStream.WriteAsync(new Transaction
@@ -80,7 +78,6 @@ public class AccountGrpcService : AccountService.AccountServiceBase
 
         await foreach (var deposit in requestStream.ReadAllAsync(context.CancellationToken))
         {
-            // پردازش هر واریز با تأخیر تا client streaming دیده شود
             await Task.Delay(StreamDelayMs, context.CancellationToken);
 
             if (!Balances.ContainsKey(deposit.AccountNumber))
@@ -99,7 +96,6 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         };
     }
 
-    // چت‌روم: کانال باز می‌ماند؛ هر پیام کاربر → پاسخ پشتیبان (با تأخیر)
     public override async Task Chat(
         IAsyncStreamReader<ChatMessage> requestStream,
         IServerStreamWriter<ChatMessage> responseStream,

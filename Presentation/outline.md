@@ -16,12 +16,13 @@
 ## ترتیب دمو
 
 1. اول `GrpcDemo.Server` را Run کنید (`http://localhost:5051`)
-2. بعد `GrpcDemo.Client` را Run کنید (`http://localhost:5200`)
-3. تب‌ها به ترتیب:
-   - **Unary / Headers** — correlation-id، Deadline، Trailers
-   - **Server Stream** — تراکنش‌ها با Delay حدود ۱.۵ث
-   - **Client Stream** — چند واریز → یک خلاصه
-   - **BiDi — چت** — کانال باز، رفت‌وبرگشت هم‌زمان
+2. **UI:** `GrpcDemo.Client` (Blazor) → `http://localhost:5200`
+3. **توضیح کد:** فایل‌های `GrpcDemo.ConsoleClient/Demos/*.cs` را در VS باز کنید؛ در صورت نیاز Console را هم Run کنید
+4. تب‌ها / گزینه‌های منو به ترتیب:
+   - **Unary** — GetBalance + Headers + Deadline → فایل `UnaryDemo.cs`
+   - **Server Stream** — `ServerStreamingDemo.cs`
+   - **Client Stream** — `ClientStreamingDemo.cs`
+   - **BiDi — چت** — `ChatDemo.cs`
 
 ## جملات کلیدی
 
