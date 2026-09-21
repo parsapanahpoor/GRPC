@@ -45,6 +45,7 @@ public class AccountGrpcService : AccountService.AccountServiceBase
         };
     }
 
+    // لیست تراکنش‌های یک حساب به‌صورت تدریجی 
     public override async Task StreamTransactions(
         StreamTransactionsRequest request,
         IServerStreamWriter<Transaction> responseStream,
