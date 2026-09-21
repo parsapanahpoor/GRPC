@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>معرفی gRPC در اکوسیستم .NET</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #0b1220;
+      --bg-slide: #111827;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e5eefb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #34d399;
+      --accent-3: #a78bfa;
+      --warn: #fbbf24;
+      --danger: #f87171;
+      --code-bg: #0a0f1a;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg-deep);
+      color: var(--text);
+      font-family: "Vazirmatn", Tahoma, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background:
+        radial-gradient(1200px 700px at 90% -10%, rgba(56, 189, 248, 0.18), transparent 55%),
+        radial-gradient(900px 600px at -10% 110%, rgba(167, 139, 250, 0.16), transparent 50%),
+        radial-gradient(700px 500px at 50% 50%, rgba(52, 211, 153, 0.06), transparent 60%),
+        var(--bg-deep);
+    }
+
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.5rem, 5vw, 4.5rem) 5.5rem;
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .slide.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 1;
+      transform: none;
+    }
+
+    .slide.lead {
+      text-align: center;
+      align-items: center;
+      justify-content: center;
+      background:
+        linear-gradient(135deg, rgba(56, 189, 248, 0.08), transparent 40%),
+        linear-gradient(225deg, rgba(167, 139, 250, 0.1), transparent 45%);
+    }
+
+    .slide.lead h1 {
+      font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+      line-height: 1.25;
+      background: linear-gradient(120deg, #e0f2fe, #38bdf8 40%, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 1rem;
+    }
+
+    .slide.lead .subtitle {
+      color: var(--muted);
+      font-size: clamp(1.1rem, 2vw, 1.45rem);
+      font-weight: 400;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 1.25rem;
+      color: #f8fafc;
+    }
+
+    h2 {
+      font-size: clamp(1.2rem, 2.2vw, 1.55rem);
+      font-weight: 700;
+      margin: 1.2rem 0 0.7rem;
+      color: var(--accent);
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-top: 0.75rem;
+    }
+
+    p, li {
+      font-size: clamp(1rem, 1.5vw, 1.2rem);
+      line-height: 1.85;
+      color: var(--text);
+    }
+
+    .content {
+      max-width: 1100px;
+      width: 100%;
+      margin-inline: auto;
+    }
+
+    ul, ol {
+      padding-inline-start: 1.4rem;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    li::marker { color: var(--accent); }
+
+    blockquote {
+      margin: 1rem 0;
+      padding: 1rem 1.25rem;
+      border-right: 4px solid var(--accent);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.03));
+      font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+
+    blockquote strong { color: var(--accent-2); }
+
+    .note {
+      margin-top: 1rem;
+      padding: 0.9rem 1.1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .note strong { color: var(--warn); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card.yes { border-color: rgba(52, 211, 153, 0.35); }
+    .card.no { border-color: rgba(248, 113, 113, 0.35); }
+    .card h2 { margin-top: 0; font-size: 1.15rem; }
+    .card.yes h2 { color: var(--accent-2); }
+    .card.no h2 { color: var(--danger); }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 1rem 0;
+      font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.65);
+    }
+
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: right;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: rgba(56, 189, 248, 0.12);
+      color: #e0f2fe;
+      font-weight: 700;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
+    td strong, th strong { color: var(--accent); }
+
+    pre, code {
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      direction: ltr;
+      text-align: left;
+    }
+
+    pre {
+      margin: 0.9rem 0;
+      padding: 1rem 1.15rem;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow-x: auto;
+      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.05);
+      font-size: clamp(0.85rem, 1.2vw, 0.98rem);
+      line-height: 1.65;
+      color: #dbeafe;
+    }
+
+    code:not(pre code) {
+      display: inline-block;
+      padding: 0.1rem 0.4rem;
+      border-radius: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #7dd3fc;
+      font-size: 0.92em;
+      direction: ltr;
+    }
+
+    .flow {
+      direction: ltr;
+      text-align: left;
+      white-space: pre;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      line-height: 1.7;
+      color: #bfdbfe;
+      overflow-x: auto;
+      font-size: clamp(0.85rem, 1.25vw, 1rem);
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1rem;
+    }
+
+    .pill {
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      background: rgba(167, 139, 250, 0.12);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      color: #ddd6fe;
+      font-size: 0.92rem;
+    }
+
+    .faq-item {
+      margin-bottom: 1rem;
+      padding: 0.9rem 1.1rem;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+
+    .faq-item strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
+    .faq-item p { color: var(--muted); font-size: 1.02rem; }
+
+    .agenda-list {
+      list-style: none;
+      padding: 0;
+      display: grid;
+      gap: 0.55rem;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: right;
+    }
+
+    .agenda-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      font-size: 1.05rem;
+    }
+
+    .agenda-list .num {
+      flex-shrink: 0;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      color: #0b1220;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .chrome {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.25rem 1rem;
+      background: linear-gradient(180deg, transparent, rgba(11, 18, 32, 0.92) 35%);
+      backdrop-filter: blur(8px);
+    }
+
+    .progress-wrap {
+      flex: 1;
+      height: 4px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 999px;
+      overflow: hidden;
+      max-width: 420px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+      border-radius: inherit;
+      transition: width 0.25s ease;
+    }
+
+    .counter {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-width: 4.5rem;
+      text-align: center;
+      direction: ltr;
+    }
+
+    .nav-btns {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button.nav {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    }
+
+    button.nav:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    button.nav:active { transform: scale(0.96); }
+
+    .hint {
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 40;
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.7rem;
+      border-radius: 999px;
+      direction: ltr;
+      opacity: 0.85;
+    }
+
+    .cols {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    @media (max-width: 900px) {
+      .cols { grid-template-columns: 1fr; }
+      .hint { display: none; }
+    }
+
+    .muted { color: var(--muted); }
+    .accent { color: var(--accent); }
+    .ok { color: var(--accent-2); }
+    .tight p { margin-bottom: 0.6rem; }
+
+    .title-glow::after {
+      content: "";
+      display: block;
+      width: 5rem;
+      height: 4px;
+      margin: 0.9rem auto 0;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-3));
+    }
+
+    .lead .title-glow::after { margin-inline: auto; }
+
+    mark {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fde68a;
+      padding: 0 0.2em;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="hint">← → / Space · F fullscreen · Esc</div>
+
+  <div class="deck" id="deck">
+
+    <!-- 1 -->
+    <section class="slide lead active" data-title="عنوان">
+      <div class="content">
+        <div class="badge">.NET · HTTP/2 · Protocol Buffers</div>
+        <h1 class="title-glow">معرفی gRPC در اکوسیستم .NET</h1>
+        <p class="subtitle">ارائهٔ فنی · ارتباط سرویس‌به‌سرویس با قرارداد سخت و عملکرد بالا</p>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-title="دستور جلسه">
+      <div class="content">
+        <h1>دستور جلسه</h1>
+        <ol class="agenda-list">
+          <li><span class="num">۱</span><span>مشکل REST در ارتباط سرویس‌به‌سرویس</span></li>
+          <li><span class="num">۲</span><span>gRPC چیست؟</span></li>
+          <li><span class="num">۳</span><span>Protocol Buffers و فایل <code>.proto</code></span></li>
+          <li><span class="num">۴</span><span>Field Number</span></li>
+          <li><span class="num">۵</span><span>استریم و چهار الگوی RPC</span></li>
+          <li><span class="num">۶</span><span>دموی زنده (Blazor + Console)</span></li>
+          <li><span class="num">۷</span><span>Metadata، Deadline، Interceptor</span></li>
+          <li><span class="num">۸</span><span>gRPC در مقابل REST</span></li>
+          <li><span class="num">۹</span><span>جمع‌بندی و پرسش و پاسخ</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-title="انگیزه">
+      <div class="content">
+        <h1>انگیزه: وقتی REST کافی نیست</h1>
+        <p class="muted" style="margin-bottom:1rem">در معماری میکروسرویس / ارتباط داخلی سرویس‌ها:</p>
+        <ul>
+          <li>JSON برای ترافیک زیاد می‌تواند پرحجم باشد</li>
+          <li>قرارداد گاهی شل است (مستند جدا، توافق شفاهی)</li>
+          <li>استریم واقعی سخت‌تر است (SSE / WebSocket جدا)</li>
+        </ul>
+        <div class="note" style="margin-top:1.4rem">
+          <strong>REST عالی است برای API عمومی.</strong><br />
+          برای ارتباط داخلی گاهی ابزار بهتری داریم.
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-title="gRPC در یک جمله">
+      <div class="content tight">
+        <h1>gRPC در یک جمله</h1>
+        <blockquote>
+          کلاینت یک <strong>متد</strong> را صدا می‌زند؛<br />
+          زیرش <strong>HTTP/2 + Protocol Buffers</strong> است.
+        </blockquote>
+        <p class="muted" style="margin:1rem 0 0.5rem">برای دات‌نتی‌ها:</p>
+        <blockquote>
+          حسش شبیه Interface مشترک است؛<br />
+          پیاده‌سازی روی سرور دیگر است، ولی فراخوانی مثل متد لوکال حس می‌شود.
+        </blockquote>
+        <p style="margin-top:1rem">
+          پروتکل بافرز (<strong>Protocol Buffers</strong>) که به اختصار به آن <strong>Protobuf</strong> می‌گویند، روش اختصاصی گوگل برای سریالایز کردن داده‌های ساختاریافته است؛ دقیقاً مثل JSON یا XML، اما به صورت <strong>باینری</strong>، بسیار سبک‌تر، سریع‌تر و کاملاً Strongly-Typed.
+        </p>
+        <div class="note">
+          Protobuf برای gRPC همان نقشی را بازی می‌کند که JSON برای REST API بازی می‌کند؛ با این تفاوت که خروجی آن متن خوانا نیست، بلکه بایت‌های فوق‌العاده فشرده است.
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-title="سه ستون">
+      <div class="content">
+        <h1>سه ستون gRPC</h1>
+        <table>
+          <thead>
+            <tr><th>ستون</th><th>معنی</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Contract</strong></td><td>فایل <code>.proto</code></td></tr>
+            <tr><td><strong>Transport</strong></td><td>HTTP/2</td></tr>
+            <tr><td><strong>Payload</strong></td><td>Protocol Buffers (باینری)</td></tr>
+          </tbody>
+        </table>
+        <p class="note">بدون این سه تا، تصویر gRPC کامل نیست.</p>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-title="مقایسه با REST">
+      <div class="content">
+        <h1>مقایسه سریع با REST</h1>
+        <table>
+          <thead>
+            <tr><th></th><th>REST</th><th>gRPC</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>قرارداد</td><td>اغلب OpenAPI</td><td><code>.proto</code></td></tr>
+            <tr><td>فرمت</td><td>معمولاً JSON</td><td>Protobuf</td></tr>
+            <tr><td>پروتکل</td><td>HTTP/1.1 یا 2</td><td>عمدتاً HTTP/2</td></tr>
+            <tr><td>استریم</td><td>محدود</td><td>بومی و قوی</td></tr>
+            <tr><td>مرورگر</td><td>عالی</td><td>نیاز به gRPC-Web</td></tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <strong>جملهٔ کلیدی:</strong> جایگزین همه‌چیز نیست؛ برای سرویس‌به‌سرویس اغلب بهتر است.
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-title="فایل proto">
+      <div class="content">
+        <h1>فایل <code>.proto</code> = قرارداد مشترک</h1>
+        <div class="cols">
+          <pre><code>service AccountService {
+  rpc GetBalance (GetBalanceRequest)
+      returns (GetBalanceResponse);
+}</code></pre>
+          <ul>
+            <li>منبع حقیقت بین تیم سرور و کلاینت</li>
+            <li>با Build در دات‌نت، کد C# تولید می‌شود</li>
+            <li>سرور: <code>AccountServiceBase</code></li>
+            <li>کلاینت: <code>AccountServiceClient</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-title="فرمول RPC">
+      <div class="content">
+        <h1>فرمول یک متد RPC</h1>
+        <pre><code>rpc نوع ورودی  نام_متد   returns (نوع_خروجی);</code></pre>
+        <p style="margin:1rem 0 0.5rem">و کلمهٔ جادویی:</p>
+        <pre><code>stream</code></pre>
+        <ul style="margin-top:1rem">
+          <li>بدون <code>stream</code> → یک پیام</li>
+          <li>با <code>stream</code> → چند پیام پشت‌سرهم</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide" data-title="Field Number">
+      <div class="content">
+        <h1>Field Number چیست؟</h1>
+        <pre><code>message GetBalanceResponse {
+  string account_number = 1;
+  double balance = 2;
+  string currency = 3;
+}</code></pre>
+        <table>
+          <thead>
+            <tr><th>چیز</th><th>نقش</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>اسم فیلد</td><td>برای برنامه‌نویس / کد C#</td></tr>
+            <tr><td>عدد (<code>= 1</code>)</td><td>شناسهٔ پایدار روی پیام باینری</td></tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <strong>عدد ایندکس کلاس نیست؛ ID فیلد روی شبکه است.</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide" data-title="اهمیت Field Number">
+      <div class="content">
+        <h1>چرا Field Number مهم است؟</h1>
+        <ul>
+          <li>JSON اسم می‌فرستد → خوانا ولی پرحجم‌تر</li>
+          <li>Protobuf شماره می‌فرستد → کوچک‌تر و سریع‌تر</li>
+        </ul>
+        <h2>قوانین طلایی</h2>
+        <ol>
+          <li>شماره را عوض نکن</li>
+          <li>فیلد جدید = شمارهٔ جدید</li>
+          <li>کلاینت قدیمی فیلد ناشناس را معمولاً نادیده می‌گیرد</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide" data-title="استریم">
+      <div class="content">
+        <h1>استریم یعنی چه؟</h1>
+        <blockquote>
+          <strong>استریم = جریان تدریجی داده</strong><br />
+          نه یک بستهٔ کامل یک‌جا.
+        </blockquote>
+        <table>
+          <thead>
+            <tr><th>بدون استریم</th><th>با استریم</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>یک پاسخ حجیم</td><td>چند پیام پشت‌سرهم</td></tr>
+            <tr><td>صبر تا آماده‌شدن همه</td><td>مصرف تدریجی</td></tr>
+          </tbody>
+        </table>
+        <p class="muted">تشبیه: نامهٔ پستی در مقابل تماس تلفنی.</p>
+      </div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide" data-title="چهار الگو">
+      <div class="content">
+        <h1>چهار الگوی RPC</h1>
+        <table>
+          <thead>
+            <tr><th>الگو</th><th>شکل</th><th>مثال دمو</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Unary</strong></td><td>۱ → ۱</td><td>GetBalance</td></tr>
+            <tr><td><strong>Server streaming</strong></td><td>۱ → چند</td><td>StreamTransactions</td></tr>
+            <tr><td><strong>Client streaming</strong></td><td>چند → ۱</td><td>DepositBatch</td></tr>
+            <tr><td><strong>Bidirectional</strong></td><td>چند ↔ چند</td><td>Chat</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide" data-title="قانون stream">
+      <div class="content">
+        <h1>قانون <code>stream</code> در <code>.proto</code></h1>
+        <pre><code>returns (stream Transaction)     // سرور چند پیام می‌فرستد
+rpc X (stream DepositRequest)    // کلاینت چند پیام می‌فرستد
+rpc Chat (stream M) returns (stream M)  // هر دو طرف</code></pre>
+      </div>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide" data-title="معماری ASP.NET">
+      <div class="content">
+        <h1>معماری در ASP.NET Core</h1>
+        <div class="flow">account.proto
+      ↓ Build
+Server: AccountServiceBase
+Client: AccountServiceClient
+      ↓
+AddGrpc + MapGrpcService
+GrpcChannel + Stub</div>
+        <p style="margin-top:1rem">
+          از نظر ASP.NET Core: gRPC یک endpoint دیگر است؛ پروتکل و فرمت پیام فرق دارد.
+        </p>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide" data-title="GrpcChannel و Stub">
+      <div class="content">
+        <h1>GrpcChannel و Stub</h1>
+        <div class="grid-2">
+          <div class="card">
+            <h2>۱. GrpcChannel</h2>
+            <p>ارتباط پایدار و بادوام به سرور از طریق HTTP/2.</p>
+            <ul style="margin-top:0.7rem;font-size:0.95rem">
+              <li>مدیریت TCP و Connection Pooling</li>
+              <li>Multiplexing روی HTTP/2</li>
+              <li>امنیت TLS / SSL</li>
+              <li>Timeout، بافر، Gzip، Keep-Alive</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>۲. Stub (پروکسی کلاینت)</h2>
+            <p>کلاس تولیدشده از <code>.proto</code> که متد را «لوکال» جلوه می‌دهد.</p>
+            <ul style="margin-top:0.7rem;font-size:0.95rem">
+              <li>سریالایز با Protobuf</li>
+              <li>ارسال روی GrpcChannel</li>
+              <li>دیسریالایز پاسخ به Object سی‌شارپ</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16 -->
+    <section class="slide" data-title="راه‌اندازی سرور">
+      <div class="content">
+        <h1>راه‌اندازی سرور (خلاصه)</h1>
+        <pre><code>builder.Services.AddGrpc();
+app.MapGrpcService&lt;AccountGrpcService&gt;();</code></pre>
+        <pre><code>public class AccountGrpcService
+    : AccountService.AccountServiceBase
+{
+    // override متدها
+}</code></pre>
+        <p class="muted" style="margin:0.5rem 0">خطای استاندارد:</p>
+        <pre><code>throw new RpcException(
+    new Status(StatusCode.NotFound, "..."));</code></pre>
+      </div>
+    </section>
+
+    <!-- 17 -->
+    <section class="slide" data-title="کلاینت">
+      <div class="content">
+        <h1>کلاینت (خلاصه)</h1>
+        <pre><code>var channel = GrpcChannel.ForAddress("http://localhost:5051");
+var client = new AccountService.AccountServiceClient(channel);
+
+var balance = await client.GetBalanceAsync(
+    new GetBalanceRequest { AccountNumber = "1001" });</code></pre>
+        <p style="margin:1rem 0 0.5rem">برای Client Streaming بعد از آخرین <code>Write</code>:</p>
+        <pre><code>await call.RequestStream.CompleteAsync();</code></pre>
+      </div>
+    </section>
+
+    <!-- 18 -->
+    <section class="slide" data-title="Metadata">
+      <div class="content">
+        <h1>Metadata (Headers)</h1>
+        <p>بدنهٔ پیام داخل <code>.proto</code> است. <strong class="accent">Metadata</strong> اطلاعات همراه تماس است.</p>
+        <table>
+          <thead>
+            <tr><th>REST</th><th>gRPC</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>HTTP Header</td><td>Metadata</td></tr>
+            <tr><td>Body = JSON</td><td>Body = Protobuf</td></tr>
+          </tbody>
+        </table>
+        <div class="pill-list">
+          <span class="pill">x-correlation-id</span>
+          <span class="pill">توکن / Authorization</span>
+          <span class="pill">کد شعبه، کانال، trace</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19 -->
+    <section class="slide" data-title="Headers و Trailers">
+      <div class="content">
+        <h1>Headers در مقابل Trailers</h1>
+        <table>
+          <thead>
+            <tr><th>نوع</th><th>کی می‌رسد</th><th>کاربرد</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Request Headers</td><td>اول تماس</td><td>هویت، correlation</td></tr>
+            <tr><td>Response Trailers</td><td>آخر تماس</td><td>processed-by، جزئیات</td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:0.75rem">در دموی ما Interceptor این را برمی‌گرداند:</p>
+        <div class="pill-list">
+          <span class="pill">x-correlation-id</span>
+          <span class="pill">x-processed-by = account-service</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 20 -->
+    <section class="slide" data-title="Deadline">
+      <div class="content">
+        <h1>Deadline</h1>
+        <p>سقف زمان تماس:</p>
+        <pre><code>deadline: DateTime.UtcNow.AddSeconds(5)</code></pre>
+        <p style="margin:0.8rem 0 0.4rem">اگر سرور دیر کند:</p>
+        <pre><code>StatusCode.DeadlineExceeded</code></pre>
+        <h2>تفاوت با Cancel</h2>
+        <ul>
+          <li><strong class="ok">Deadline:</strong> از اول مشخص است («تا ساعت X»)</li>
+          <li><strong class="accent">Cancel:</strong> وسط کار قطع می‌کنیم</li>
+        </ul>
+        <p class="note">هر دو به <code>CancellationToken</code> سرور می‌رسند.</p>
+      </div>
+    </section>
+
+    <!-- 21 -->
+    <section class="slide" data-title="Interceptor">
+      <div class="content">
+        <h1>Interceptor</h1>
+        <p>شبیه Middleware در ASP.NET Core، ولی روی RPC:</p>
+        <div class="flow">کلاینت → Client Interceptor → شبکه
+       → Server Interceptor → متد سرویس</div>
+        <h2>کاربردها</h2>
+        <ul>
+          <li>لاگ و correlation-id</li>
+          <li>احراز هویت از Metadata</li>
+          <li>متریک مدت‌زمان</li>
+          <li>تبدیل خطا</li>
+        </ul>
+        <p class="note"><code>continuation</code> = همان <code>next()</code> در Middleware.</p>
+      </div>
+    </section>
+
+    <!-- 22 -->
+    <section class="slide" data-title="مقایسه عمیق">
+      <div class="content">
+        <h1>gRPC در مقابل REST — عمیق‌تر</h1>
+        <table>
+          <thead>
+            <tr><th>موضوع</th><th>REST</th><th>gRPC</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>واحد کار</td><td>منبع + فعل</td><td>متد RPC</td></tr>
+            <tr><td>قرارداد</td><td>URL + JSON schema</td><td><code>.proto</code></td></tr>
+            <tr><td>هویت فیلد</td><td>اسم JSON</td><td>field number</td></tr>
+            <tr><td>همراه تماس</td><td>Header</td><td>Metadata</td></tr>
+            <tr><td>سقف زمان</td><td>Timeout کلاینت</td><td>Deadline تماس</td></tr>
+            <tr><td>خطا</td><td>HTTP 404/...</td><td><code>StatusCode</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 23 -->
+    <section class="slide" data-title="نقشه خطاها">
+      <div class="content">
+        <h1>نقشهٔ تقریبی خطاها</h1>
+        <table>
+          <thead>
+            <tr><th>HTTP</th><th>gRPC</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>400</td><td>InvalidArgument</td></tr>
+            <tr><td>401</td><td>Unauthenticated</td></tr>
+            <tr><td>403</td><td>PermissionDenied</td></tr>
+            <tr><td>404</td><td>NotFound</td></tr>
+            <tr><td>429</td><td>ResourceExhausted</td></tr>
+            <tr><td>500</td><td>Internal</td></tr>
+            <tr><td>504</td><td>DeadlineExceeded</td></tr>
+          </tbody>
+        </table>
+        <p class="note">دقیق یک‌به‌یک نیستند؛ برای کار روزمره کافی است.</p>
+      </div>
+    </section>
+
+    <!-- 24 -->
+    <section class="slide" data-title="الگوی معماری">
+      <div class="content">
+        <h1>الگوی معماری پیشنهادی</h1>
+        <div class="flow">کانال خارجی (موبایل، وب، شریک)
+        REST / JSON
+              ↓
+         API Gateway
+              ↓
+   سرویس‌های داخلی با gRPC</div>
+        <div class="grid-2" style="margin-top:1.2rem">
+          <div class="card"><strong class="accent">بیرون:</strong> سازگار و آشنا</div>
+          <div class="card"><strong class="ok">داخل:</strong> قرارداد سخت + عملکرد بهتر</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 25 -->
+    <section class="slide" data-title="کی استفاده کنیم">
+      <div class="content">
+        <h1>کی استفاده کنیم؟</h1>
+        <div class="grid-2">
+          <div class="card yes">
+            <h2>بله</h2>
+            <ul>
+              <li>ارتباط داخلی میکروسرویس‌ها</li>
+              <li>نیاز به قرارداد سخت بین تیم‌ها</li>
+              <li>نیاز به استریم</li>
+              <li>ترافیک زیاد سرویس‌به‌سرویس</li>
+            </ul>
+          </div>
+          <div class="card no">
+            <h2>احتیاط / خیر</h2>
+            <ul>
+              <li>API عمومی مرورگر بدون gRPC-Web</li>
+              <li>وقتی مصرف‌کننده فقط REST می‌خواهد</li>
+              <li>وقتی اولویت اول دیباگ انسانی با JSON است</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 26 -->
+    <section class="slide" data-title="سوالات پرتکرار">
+      <div class="content">
+        <h1>سوالات پرتکرار</h1>
+        <div class="faq-item">
+          <strong>REST را دور بریزیم؟</strong>
+          <p>نه. مکمل‌اند.</p>
+        </div>
+        <div class="faq-item">
+          <strong>از مرورگر مستقیم؟</strong>
+          <p>معمولاً gRPC-Web یا Gateway. gRPC استاندارد برای بک‌اند به بک‌اند (HTTP/2 خالص) عالی است؛ برای مرورگر به‌خاطر محدودیت Trailers و فریم‌های HTTP/2 از gRPC-Web به‌عنوان پل استفاده می‌کنیم.</p>
+        </div>
+        <div class="faq-item">
+          <strong>Field number عوض شود؟</strong>
+          <p>خطر شکستن سازگاری.</p>
+        </div>
+        <div class="faq-item">
+          <strong>کجا در سازمان بانکی؟</strong>
+          <p>ارتباط داخلی سرویس‌ها، نه لزوماً درگاه عمومی مشتری.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 27 -->
+    <section class="slide lead" data-title="پرسش و پاسخ">
+      <div class="content">
+        <div class="badge">پایان ارائه</div>
+        <h1 class="title-glow">پرسش و پاسخ</h1>
+        <h3>ممنون از توجه شما</h3>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="chrome">
+    <div class="nav-btns">
+      <button class="nav" id="prevBtn" title="قبلی" aria-label="اسلاید قبلی">›</button>
+      <button class="nav" id="nextBtn" title="بعدی" aria-label="اسلاید بعدی">‹</button>
+    </div>
+    <div class="progress-wrap" aria-hidden="true">
+      <div class="progress-bar" id="progress"></div>
+    </div>
+    <div class="counter" id="counter">1 / 1</div>
+  </div>
+
+  <script>
+    (function () {
+      const slides = Array.from(document.querySelectorAll(".slide"));
+      const progress = document.getElementById("progress");
+      const counter = document.getElementById("counter");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      let index = 0;
+
+      function show(i) {
+        index = Math.max(0, Math.min(slides.length - 1, i));
+        slides.forEach((s, n) => s.classList.toggle("active", n === index));
+        const pct = ((index + 1) / slides.length) * 100;
+        progress.style.width = pct + "%";
+        counter.textContent = (index + 1) + " / " + slides.length;
+        document.title = (slides[index].dataset.title || "gRPC") + " · معرفی gRPC";
+        history.replaceState(null, "", "#" + (index + 1));
+      }
+
+      function next() { show(index + 1); }
+      function prev() { show(index - 1); }
+
+      prevBtn.addEventListener("click", prev);
+      nextBtn.addEventListener("click", next);
+
+      document.addEventListener("keydown", (e) => {
+        if (["ArrowLeft", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) {
+          e.preventDefault();
+          next();
+        } else if (["ArrowRight", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) {
+          e.preventDefault();
+          prev();
+        } else if (e.key === "Home") {
+          e.preventDefault();
+          show(0);
+        } else if (e.key === "End") {
+          e.preventDefault();
+          show(slides.length - 1);
+        } else if (e.key === "f" || e.key === "F") {
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+          else document.exitFullscreen?.();
+        } else if (e.key === "Escape" && document.fullscreenElement) {
+          document.exitFullscreen?.();
+        }
+      });
+
+      let touchX = null;
+      document.addEventListener("touchstart", (e) => {
+        touchX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      document.addEventListener("touchend", (e) => {
+        if (touchX == null) return;
+        const dx = e.changedTouches[0].screenX - touchX;
+        if (Math.abs(dx) > 50) {
+          // RTL: swipe right = next visually feels like going forward in reading order? 
+          // In RTL decks, swipe left (negative dx) often means next content.
+          if (dx < 0) next();
+          else prev();
+        }
+        touchX = null;
+      }, { passive: true });
+
+      const hash = parseInt(location.hash.replace("#", ""), 10);
+      show(Number.isFinite(hash) && hash >= 1 ? hash - 1 : 0);
+    })();
+  </script>
+</body>
+</html>
