@@ -29,14 +29,6 @@ style: |
 
 # معرفی gRPC در اکوسیستم .NET
 
-### قرارداد، عملکرد، استریم — با دموی زنده
-
-**ارائه برای همکاران دات‌نت | حدود ۴۵ دقیقه**
-
-</div>
-
----
-
 <div dir="rtl">
 
 # دستور جلسه
@@ -53,26 +45,15 @@ style: |
 
 </div>
 
----
 
-<div dir="rtl">
-
-# هدف این جلسه
-
-- بفهمیم gRPC **کجاست** و چه مسئله‌ای را حل می‌کند
-- قرارداد `.proto` و تولید کد C# را بشناسیم
-- چهار الگوی فراخوانی را با دمو ببینیم
-- بدانیم **کی استفاده کنیم** و کی نکنیم
-
-> هدف حفظ کردن همه‌چیز نیست؛ هدف فهم مدل ذهنی است.
-
-</div>
 
 ---
 
 <div dir="rtl">
 
 # انگیزه: وقتی REST کافی نیست
+
+
 
 در معماری میکروسرویس / ارتباط داخلی سرویس‌ها:
 
@@ -98,6 +79,13 @@ style: |
 
 > حسش شبیه Interface مشترک است؛  
 > پیاده‌سازی روی سرور دیگر است، ولی فراخوانی مثل متد لوکال حس می‌شود.
+
+پروتکل بافرز (Protocol Buffers) که به اختصار به آن Protobuf می‌گویند، روش اختصاصی گوگل برای سریالایز کردن داده‌های ساختاریافته (Serialization) است؛ دقیقاً مثل JSON یا XML، اما به صورت باینری (Binary)، بسیار سبک‌تر، سریع‌تر و کاملاً Strongly-Typed.
+
+اگر بخواهیم در یک جمله بگوییم:
+
+Protobuf برای gRPC همان نقشی را بازی می‌کند که JSON برای REST API بازی می‌کند؛ با این تفاوت که خروجی آن متن خوانا نیست، بلکه بایت‌های فوق‌العاده فشرده است.
+
 
 </div>
 
@@ -141,12 +129,19 @@ style: |
 
 # فایل `.proto` = قرارداد مشترک
 
+</div>
+
+<div dir="ltr">
+
 ```proto
 service AccountService {
   rpc GetBalance (GetBalanceRequest)
       returns (GetBalanceResponse);
 }
 ```
+</div>
+
+<div dir="rtl">
 
 - منبع حقیقت بین تیم سرور و کلاینت
 - با Build در دات‌نت، کد C# تولید می‌شود
@@ -160,10 +155,16 @@ service AccountService {
 <div dir="rtl">
 
 # فرمول یک متد RPC
+</div>
+
+<div dir="ltr">
 
 ```text
-rpc نام_متد (نوع_ورودی) returns (نوع_خروجی);
+rpc نوع ورودی  نام_متد   returns (نوع_خروجی);
 ```
+</div>
+
+<div dir="rtl">
 
 و کلمهٔ جادویی:
 
@@ -181,6 +182,9 @@ stream
 <div dir="rtl">
 
 # Field Number چیست؟
+</div>
+
+<div dir="ltr">
 
 ```proto
 message GetBalanceResponse {
@@ -189,13 +193,16 @@ message GetBalanceResponse {
   string currency = 3;
 }
 ```
+</div>
+
+<div dir="rtl">
 
 | چیز | نقش |
 |-----|-----|
 | اسم فیلد | برای برنامه‌نویس / کد C# |
 | عدد (`= 1`) | شناسهٔ پایدار روی پیام باینری |
 
-**عدد ایندکس کلاس نیست؛ ID فیلد روی سیم است.**
+**عدد ایندکس کلاس نیست؛ ID فیلد روی شبکه است.**
 
 </div>
 
@@ -230,7 +237,7 @@ message GetBalanceResponse {
 | یک پاسخ حجیم | چند پیام پشت‌سرهم |
 | صبر تا آماده‌شدن همه | مصرف تدریجی |
 
-تشبیه: نامهٔ پستی در مقابل لولهٔ آب / تماس تلفنی.
+تشبیه: نامهٔ پستی در مقابل تماس تلفنی.
 
 </div>
 
@@ -254,14 +261,18 @@ message GetBalanceResponse {
 <div dir="rtl">
 
 # قانون `stream` در `.proto`
+</div>
+
+<div dir="ltr">
 
 ```proto
 returns (stream Transaction)     // سرور چند پیام می‌فرستد
 rpc X (stream DepositRequest)    // کلاینت چند پیام می‌فرستد
 rpc Chat (stream M) returns (stream M)  // هر دو طرف
 ```
+</div>
 
-این جدول را حفظ کنید — پرتکرارترین سوال جلسه است.
+<div dir="rtl">
 
 </div>
 
@@ -284,6 +295,33 @@ GrpcChannel + Stub
 از نظر ASP.NET Core: gRPC یک endpoint دیگر است؛  
 پروتکل و فرمت پیام فرق دارد.
 
+
+۱. مفهوم GrpcChannel (کانال ارتباطی)
+GrpcChannel نشان‌دهنده یک ارتباط پایدار و بادوام (Long-lived Connection) به سرور gRPC از طریق پروتکل HTTP/2 است.
+
+وظایف اصلی کانال:
+
+ - مدیریت TCP Connection: باز نگه داشتن کانال و استفاده مجدد از کانکشن‌ها (Connection Pooling).
+- مدیریت فریم‌های HTTP/2: هندل کردن Multiplexing (ارسال هم‌زمان چند ریکوئست روی یک کانکشن بدون معطلی).
+ - امنیت: مدیریت TLS و SSL Handshake.
+ - تنظیمات شبکه: تعیین Timeout، اندازه بافر، فشرده‌سازی (Gzip) و Keep-Alive پکت‌ها.
+
+۲. مفهوم Stub (کلاینت واسط / پروکسی محلی)
+کلمه Stub در لغت یعنی «ریشه»، «ته‌مانده» یا «چیز توخالی»، اما در مهندسی نرم‌افزار به معنی پروکسی واسط کلاینت (Client Proxy) است.
+
+وقتی فایل .proto کامپایل می‌شود، ابزار کامپایلر یک کلاس اختصاصی برای کلاینت می‌سازد که به آن Stub می‌گویند.
+
+وظیفه Stub چیست؟
+Stub به شما این توهم را می‌دهد که دارید یک متد محلی (Local Method) روی رم سرور خودتان را صدا می‌زنید، در حالی که آن متد فرسنگ‌ها دورتر روی یک سرور دیگر در حال اجراست! (ماهیت واقعی مفهوم RPC یا Remote Procedure Call).
+
+Stub پشت صحنه کارهای زیر را انجام می‌دهد:
+
+- پارامترهای ارسالی C# را می‌گیرد.
+ - آن‌ها را با Protobuf تبدیل به بایت می‌کند (Serialization).
+ -تحویل GrpcChannel می‌دهد تا به سرور ارسال میشوند.
+ - پاسخ باینری برگشتی از سرور را می‌گیرد و دیسریالایز کرده و در قالب یک Object شیک C# به شما تحویل می‌دهد.
+
+
 </div>
 
 ---
@@ -291,6 +329,10 @@ GrpcChannel + Stub
 <div dir="rtl">
 
 # راه‌اندازی سرور (خلاصه)
+
+</div>
+
+<div dir="ltr">
 
 ```csharp
 builder.Services.AddGrpc();
@@ -319,6 +361,9 @@ throw new RpcException(
 <div dir="rtl">
 
 # کلاینت (خلاصه)
+</div>
+
+<div dir="ltr">
 
 ```csharp
 var channel = GrpcChannel.ForAddress("http://localhost:5051");
@@ -327,8 +372,14 @@ var client = new AccountService.AccountServiceClient(channel);
 var balance = await client.GetBalanceAsync(
     new GetBalanceRequest { AccountNumber = "1001" });
 ```
+</div>
+
+<div dir="rtl">
 
 برای Client Streaming بعد از آخرین `Write`:
+</div>
+
+<div dir="ltr">
 
 ```csharp
 await call.RequestStream.CompleteAsync();
@@ -336,110 +387,8 @@ await call.RequestStream.CompleteAsync();
 
 </div>
 
----
 
-<!-- _class: lead -->
 
-<div dir="rtl">
-
-# دموی زنده
-
-### Blazor = نمایش بصری  
-### Console = توضیح خط‌به‌خط کد
-
-</div>
-
----
-
-<div dir="rtl">
-
-# ترتیب اجرای دمو
-
-1. Run کردن `GrpcDemo.Server` → پورت `5051`
-2. UI: `GrpcDemo.Client` (Blazor) → `5200`
-3. کد: فایل‌های `GrpcDemo.ConsoleClient/Demos/*.cs`
-
-ترتیب پیشنهادی روی صحنه:
-
-1. Unary  
-2. Server Stream  
-3. Client Stream  
-4. BiDi — چت
-
-</div>
-
----
-
-<div dir="rtl">
-
-# دمو ۱ — Unary
-
-**یک سوال، یک جواب**
-
-- متد: `GetBalance`
-- شبیه فراخوانی متد معمولی / یک درخواست REST
-- همراه با:
-  - Headers (`x-correlation-id`)
-  - Deadline
-  - Trailers
-
-فایل کد: `Demos/UnaryDemo.cs`
-
-</div>
-
----
-
-<div dir="rtl">
-
-# دمو ۲ — Server Streaming
-
-**یک درخواست → چند پاسخ پشت‌سرهم**
-
-- متد: `StreamTransactions`
-- سرور با Delay (~۱.۵ث) پیام می‌فرستد تا جریان دیده شود
-- کلاینت با `await foreach` می‌خواند
-
-```csharp
-await foreach (var tx in call.ResponseStream.ReadAllAsync())
-{
-    // هر بار یک Transaction
-}
-```
-
-</div>
-
----
-
-<div dir="rtl">
-
-# دمو ۳ — Client Streaming
-
-**چند درخواست → یک پاسخ نهایی**
-
-- متد: `DepositBatch`
-- کلاینت چند بار `WriteAsync`
-- سپس حتماً `CompleteAsync`
-- سرور یک خلاصه برمی‌گرداند
-
-بدون `CompleteAsync` سرور معمولاً منتظر می‌ماند.
-
-</div>
-
----
-
-<div dir="rtl">
-
-# دمو ۴ — Bidirectional (چت)
-
-**کانال باز؛ رفت‌وبرگشت هم‌زمان**
-
-- متد: `Chat`
-- برخلاف سه حالت قبل، تماس برای هر پیام بسته نمی‌شود
-- شما چند پیام می‌فرستید؛ پشتیبان روی همان استریم جواب می‌دهد
-
-این بهترین مثال برای فهم BiDi است.
-
-</div>
 
 ---
 
@@ -610,48 +559,23 @@ StatusCode.DeadlineExceeded
 
 </div>
 
----
 
-<div dir="rtl">
-
-# ساختار سولوشن دمو
-
-| پروژه | نقش در ارائه |
-|--------|----------------|
-| `GrpcDemo.Server` | سرور gRPC |
-| `GrpcDemo.Client` | Blazor — UI بصری |
-| `GrpcDemo.ConsoleClient` | کد خوانا برای توضیح |
-| `protos/account.proto` | قرارداد |
-| `Presentation/` | همین اسلایدها |
-
-</div>
 
 ---
 
 <div dir="rtl">
 
-# جمع‌بندی
-
-1. gRPC = RPC روی HTTP/2 با Protobuf  
-2. `.proto` قرارداد است؛ Field Number هویت باینری فیلد است  
-3. استریم = پیام‌های پشت‌سرهم  
-4. چهار الگو: Unary / Server / Client / BiDi  
-5. Metadata، Deadline، Interceptor ابزارهای عملیاتی‌اند  
-6. ابزار مناسب برای جای مناسب — نه مد
-
-</div>
-
----
-
-<div dir="rtl">
-
-# سوالات پرتکرار (آماده‌باش)
+# سوالات پرتکرار 
 
 **REST را دور بریزیم؟**  
 نه. مکمل‌اند.
 
 **از مرورگر مستقیم؟**  
 معمولاً gRPC-Web یا Gateway.
+
+*«gRPC استاندارد برای دنیای بک‌اند به بک‌اند (سرویس‌های داخلی با HTTP/2 خالص) پادشاهی می‌کند.
+
+اما وقتی پای مرورگر وب وسط می‌آید، به دلیل محدودیت‌های امنیتی مرورگرها در دسترسی به Trailers و فریم‌های HTTP/2، از gRPC-Web به عنوان یک پل ارتباطی (Bridge) استفاده می‌کنیم.»*
 
 **Field number عوض شود؟**  
 خطر شکستن سازگاری.

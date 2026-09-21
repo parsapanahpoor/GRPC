@@ -11,7 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "protos", "protos", "{B10000
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{B1000003-0003-0003-0003-000000000003}"
 	ProjectSection(SolutionItems) = preProject
-		Presentation\outline.md = Presentation\outline.md
 		Presentation\slides.md = Presentation\slides.md
 	EndProjectSection
 EndProject
@@ -40,9 +39,15 @@ Global
 		{A3333333-3333-3333-3333-333333333333}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3333333-3333-3333-3333-333333333333}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A1111111-1111-1111-1111-111111111111} = {B1000001-0001-0001-0001-000000000001}
 		{A2222222-2222-2222-2222-222222222222} = {B1000001-0001-0001-0001-000000000001}
 		{A3333333-3333-3333-3333-333333333333} = {B1000001-0001-0001-0001-000000000001}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B5E80211-48AB-4520-8A9C-C5BBC505AD5A}
 	EndGlobalSection
 EndGlobal
