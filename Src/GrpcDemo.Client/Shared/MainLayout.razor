@@ -1,15 +1,21 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <header>
-        <h1>gRPC Demo Room</h1>
-        <p>چهار الگوی فراخوانی — هر تب یک متد، با توضیح و دموی زنده</p>
+    <header class="app-header">
+        <div class="brand-row">
+            <div>
+                <div class="brand-badge">.NET · gRPC · Blazor Server</div>
+                <h1>gRPC Demo Room</h1>
+                <p class="tagline">چهار الگوی فراخوانی — هر تب یک متد، با توضیح و دموی زنده روی سرور واقعی</p>
+            </div>
+            <div class="live-pill">دموی تعاملی</div>
+        </div>
         <nav class="tabs">
             <NavLink href="/" Match="NavLinkMatch.All">خانه</NavLink>
-            <NavLink href="/unary">1. Unary / Headers</NavLink>
-            <NavLink href="/server-stream">2. Server Stream</NavLink>
-            <NavLink href="/client-stream">3. Client Stream</NavLink>
-            <NavLink href="/chat">4. BiDi — چت</NavLink>
+            <NavLink href="/unary">۱. Unary</NavLink>
+            <NavLink href="/server-stream">۲. Server Stream</NavLink>
+            <NavLink href="/client-stream">۳. Client Stream</NavLink>
+            <NavLink href="/chat">۴. BiDi چت</NavLink>
         </nav>
     </header>
     <main>

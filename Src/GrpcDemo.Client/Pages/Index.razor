@@ -1,24 +1,38 @@
 @page "/"
 
-<section class="info">
-    <h2>خانه — نقشهٔ دمو</h2>
-    <p class="hint">هر تب یک الگوی gRPC است. روی صحنه به‌ترتیب از ۱ تا ۴ بروید.</p>
-    <div class="home-links">
-        <a href="unary">
-            <strong>1. Unary + Headers + Deadline</strong><br />
-            موجودی + correlation-id + دموی DeadlineExceeded
-        </a>
-        <a href="server-stream">
-            <strong>2. Server Streaming</strong><br />
-            یک درخواست → چند پاسخ با تأخیر محسوس (~۱.۵ ثانیه)
-        </a>
-        <a href="client-stream">
-            <strong>3. Client Streaming</strong><br />
-            چند درخواست از کلاینت → یک خلاصهٔ نهایی
-        </a>
-        <a href="chat">
-            <strong>4. Bidirectional — چت‌روم</strong><br />
-            کانال باز؛ شما و پشتیبان هم‌زمان پیام رد و بدل می‌کنید
-        </a>
-    </div>
+<section class="info home-hero">
+    <span class="section-kicker">نقشهٔ دمو</span>
+    <h2>از کجا شروع کنیم؟</h2>
+    <p class="hint">هر کارت یک الگوی gRPC است. روی صحنه به‌ترتیب از ۱ تا ۴ بروید تا تفاوت Unary، استریم سرور، استریم کلاینت و BiDi را حس کنید.</p>
 </section>
+
+<div class="home-links">
+    <a href="unary">
+        <span class="step">۱</span>
+        <div>
+            <strong>Unary + Headers + Deadline</strong>
+            <span>موجودی حساب، correlation-id، Trailers و دموی DeadlineExceeded</span>
+        </div>
+    </a>
+    <a href="server-stream">
+        <span class="step">۲</span>
+        <div>
+            <strong>Server Streaming</strong>
+            <span>یک درخواست → چند تراکنش پشت‌سرهم با تأخیر محسوس (~۱.۵ ثانیه)</span>
+        </div>
+    </a>
+    <a href="client-stream">
+        <span class="step">۳</span>
+        <div>
+            <strong>Client Streaming</strong>
+            <span>چند واریز از کلاینت → یک خلاصهٔ نهایی با CompleteAsync</span>
+        </div>
+    </a>
+    <a href="chat">
+        <span class="step">۴</span>
+        <div>
+            <strong>Bidirectional — چت‌روم</strong>
+            <span>کانال باز؛ شما و پشتیبان هم‌زمان روی یک تماس پیام رد و بدل می‌کنید</span>
+        </div>
+    </a>
+</div>
