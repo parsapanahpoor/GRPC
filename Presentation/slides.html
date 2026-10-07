@@ -299,6 +299,114 @@
     .faq-item strong { color: var(--accent); display: block; margin-bottom: 0.35rem; }
     .faq-item p { color: var(--muted); font-size: 1.02rem; }
 
+    .slide.qa-slide.active {
+      justify-content: safe center;
+      overflow-y: auto;
+    }
+
+    .qa-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .qa-head h1 { margin-bottom: 0; }
+
+    .qa-kicker {
+      color: var(--accent-3);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .qa-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .qa-grid.single { grid-template-columns: 1fr; }
+
+    @media (max-width: 900px) {
+      .qa-grid { grid-template-columns: 1fr; }
+    }
+
+    .qa-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      padding: 1rem 1.15rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: var(--shadow);
+    }
+
+    .qa-q {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+      font-weight: 600;
+      line-height: 1.8;
+      color: #f1f5f9;
+    }
+
+    .qa-num {
+      flex-shrink: 0;
+      min-width: 2rem;
+      height: 2rem;
+      padding: 0 0.4rem;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--accent), var(--accent-3));
+      color: #0b1220;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .qa-a {
+      margin-top: auto;
+      padding: 0.65rem 0.9rem;
+      border-right: 3px solid var(--accent-2);
+      border-radius: 12px 0 0 12px;
+      background: linear-gradient(270deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.03));
+      font-size: clamp(0.92rem, 1.25vw, 1.02rem);
+      line-height: 1.85;
+      color: #d1fae5;
+    }
+
+    .qa-a::before {
+      content: "پاسخ";
+      display: inline-block;
+      margin-left: 0.5rem;
+      padding: 0.05rem 0.55rem;
+      border-radius: 999px;
+      background: rgba(52, 211, 153, 0.2);
+      color: var(--accent-2);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .qa-parts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+      max-width: 960px;
+      text-align: right;
+    }
+
+    @media (max-width: 900px) {
+      .qa-parts { grid-template-columns: 1fr; }
+    }
+
+    .qa-parts .card strong { display: block; color: var(--accent); margin-bottom: 0.35rem; }
+    .qa-parts .card span { color: var(--muted); font-size: 0.98rem; }
+
     .agenda-list {
       list-style: none;
       padding: 0;
@@ -477,7 +585,8 @@
           <li><span class="num">۶</span><span>دموی زنده (Blazor + Console)</span></li>
           <li><span class="num">۷</span><span>Metadata، Deadline، Interceptor</span></li>
           <li><span class="num">۸</span><span>gRPC در مقابل REST</span></li>
-          <li><span class="num">۹</span><span>جمع‌بندی و پرسش و پاسخ</span></li>
+          <li><span class="num">۹</span><span>بانک سوالات و مرور مفاهیم</span></li>
+          <li><span class="num">۱۰</span><span>جمع‌بندی و پرسش و پاسخ</span></li>
         </ol>
       </div>
     </section>
@@ -946,7 +1055,364 @@ var balance = await client.GetBalanceAsync(
       </div>
     </section>
 
-    <!-- 27 -->
+    <!-- Q&A bank: intro -->
+    <section class="slide lead" data-title="بانک سوالات">
+      <div class="content">
+        <div class="badge">مرور و جمع‌بندی</div>
+        <h1 class="title-glow">بانک سوالات gRPC</h1>
+        <p class="subtitle">۴۰ سوال و پاسخ برای مرور مفاهیم ارائه</p>
+        <div class="qa-parts">
+          <div class="card"><strong>بخش اول</strong><span>۲۰ سوال چهارگزینه‌ای: HTTP/2، مقایسه با REST، Protobuf و ASP.NET Core</span></div>
+          <div class="card"><strong>بخش دوم</strong><span>۱۰ سوال تشریحی: Kestrel، Interceptor، Versioning، کلاینت دات‌نت و Deadline</span></div>
+          <div class="card"><strong>بخش سوم</strong><span>۱۰ سوال تشریحی: پروتکل، Trailers، استاتوس‌کدها و انکودینگ Protobuf</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCQ 1-4 -->
+    <section class="slide qa-slide" data-title="سوالات ۱ تا ۴">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات چهارگزینه‌ای</h1>
+          <span class="qa-kicker">بخش اول · ۱ تا ۴ از ۲۰</span>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱</span><span>کدام ویژگی بنیادین در HTTP/2 مشکل Head-of-Line Blocking (HoL) در لایهٔ Application را که در HTTP/1.1 وجود داشت، حل کرد؟</span></div>
+            <div class="qa-a">ب) Multiplexing مبتنی بر فریم‌های دودویی (Binary Framing)</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۲</span><span>تکنیک فشرده‌سازی هدرها در پروتکل HTTP/2 چه نام دارد و هدف اصلی آن چیست؟</span></div>
+            <div class="qa-a">الف) HPACK؛ کاهش سربار هدرهای تکراری در درخواست‌های متوالی</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۳</span><span>چرا ارتباطات gRPC به‌طور پیش‌فرض نیازمند HTTP/2 (یا HTTP/3) هستند و روی HTTP/1.1 به‌خوبی کار نمی‌کنند؟</span></div>
+            <div class="qa-a">ج) به دلیل وابستگی به ساختار فریم‌های باینری، Multiplexing و جریان دوطرفه (Bi-directional Streaming)</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۴</span><span>در سطح لایهٔ انتقال (Transport Layer)، ارتباط gRPC روی کدام پروتکل استاندارد برقرار می‌شود؟</span></div>
+            <div class="qa-a">ب) TCP</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCQ 5-8 -->
+    <section class="slide qa-slide" data-title="سوالات ۵ تا ۸">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات چهارگزینه‌ای</h1>
+          <span class="qa-kicker">بخش اول · ۵ تا ۸ از ۲۰</span>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۵</span><span>مفهوم Trailer Metadata در HTTP/2 چه کاربردی در gRPC دارد؟</span></div>
+            <div class="qa-a">الف) ارسال وضعیت نهایی اجرای متد (<code>grpc-status</code> و پیام خطا) پس از اتمام بدنهٔ پیام</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۶</span><span>کدام رویکرد در متودولوژی طراحی، تفاوت کلیدی بین REST و gRPC محسوب می‌شود؟</span></div>
+            <div class="qa-a">ب) REST مبتنی بر منابع و افعال استاندارد (Resource-Oriented) و gRPC مبتنی بر فراخوانی توابع از راه دور (RPC / Action-Oriented) است</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۷</span><span>علت اصلی عملکرد بالاتر (Throughput بیشتر و Latency کمتر) در gRPC نسبت به REST چیست؟</span></div>
+            <div class="qa-a">ج) سریال‌سازی باینری بهینه با Protobuf و برقراری ارتباط مداوم روی یک کانکشن اشتراکی در HTTP/2</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۸</span><span>یکی از چالش‌های اصلی استفاده از gRPC در محیط مرورگر (Browser-based Single Page Applications) چیست؟</span></div>
+            <div class="qa-a">ب) عدم دسترسی کامل مرورگرها به کنترل فریم‌های خام HTTP/2 و هدرهای Trailer (که نیازمند ابزارهایی مثل gRPC-Web است)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCQ 9-12 -->
+    <section class="slide qa-slide" data-title="سوالات ۹ تا ۱۲">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات چهارگزینه‌ای</h1>
+          <span class="qa-kicker">بخش اول · ۹ تا ۱۲ از ۲۰</span>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۹</span><span>فرمت تبادل داده پیش‌فرض در gRPC در مقایسه با وب‌سرویس‌های متداول RESTful چیست؟</span></div>
+            <div class="qa-a">ب) Protocol Buffers (باینری) در برابر متن (غالباً JSON)</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۰</span><span>در چه سناریویی استفاده از REST API همچنان نسبت به gRPC ارجحیت دارد؟</span></div>
+            <div class="qa-a">ج) APIهای عمومی (Public / External APIs) که کلاینت‌های متنوع و شخص ثالث با ابزارهای ساده وب باید به آن دسترسی داشته باشند</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۱</span><span>در فایل‌های <code>.proto</code>، مفهوم شماره فیلد (Field Tag Number) مثل <code>int32 id = 1;</code> چه نقشی دارد؟</span></div>
+            <div class="qa-a">ج) شناسهٔ دودویی فیلد در جریان بایت‌های سریال‌شده است و پس از انتشار نباید تغییر کند</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۲</span><span>اگر در یک قرارداد Protobuf فیلدی حذف شود، بهترین روش برای حفظ سازگاری عقب‌رو (Backward Compatibility) چیست؟</span></div>
+            <div class="qa-a">ب) علامت‌گذاری نام و شمارهٔ فیلد با کلیدواژهٔ <code>reserved</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCQ 13-16 -->
+    <section class="slide qa-slide" data-title="سوالات ۱۳ تا ۱۶">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات چهارگزینه‌ای</h1>
+          <span class="qa-kicker">بخش اول · ۱۳ تا ۱۶ از ۲۰</span>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۳</span><span>کدام عبارت دربارهٔ مقدار پیش‌فرض فیلدهای نوع اسکالر (Scalar Types) در سینتکس proto3 صحیح است؟</span></div>
+            <div class="qa-a">ب) فیلدهای بدون مقدار روی سیم (Over the wire) ارسال نمی‌شوند و مقادیر پیش‌فرض زبان را دارند (مثل ۰ برای اعداد و رشتهٔ خالی برای <code>string</code>)</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۴</span><span>مفهوم Idempotency در gRPC معمولاً چگونه پیکربندی و مدیریت می‌شود؟</span></div>
+            <div class="qa-a">ج) از طریق تنظیم متادیتاهای اختصاصی (مانند TransactionId / Idempotency-Key) در هدرها و پیاده‌سازی منطق idempotent در سرور یا Service Config</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۵</span><span>وظیفهٔ کامپایلر <code>protoc</code> در چرخهٔ ساخت برنامه‌های gRPC چیست؟</span></div>
+            <div class="qa-a">ج) تولید کدهای Strongly-Typed (مدل‌ها و کدهای کلاینت/سرور) برای زبان‌های مقصد از روی فایل <code>.proto</code></div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۶</span><span>در gRPC، برای ارسال اطلاعات اضافه مثل توکن‌های احراز هویت یا Tracing ID از چه مکانیزمی استفاده می‌شود؟</span></div>
+            <div class="qa-a">ب) Metadata (که در لایهٔ HTTP/2 به‌صورت فریم‌های Header ارسال می‌شود)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MCQ 17-20 -->
+    <section class="slide qa-slide" data-title="سوالات ۱۷ تا ۲۰">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات چهارگزینه‌ای</h1>
+          <span class="qa-kicker">بخش اول · ۱۷ تا ۲۰ از ۲۰</span>
+        </div>
+        <div class="qa-grid">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۷</span><span>کدام تعریف متد در Protobuf یک ارتباط Bi-directional Streaming (استریم دوطرفه) را نشان می‌دهد؟</span></div>
+            <div class="qa-a">د) <code>rpc SendData (stream DataRequest) returns (stream DataResponse);</code></div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۸</span><span>در پکیج <code>Grpc.AspNetCore</code>، ویژگی معادل Middlewareها که برای لاگ‌گیری، احراز هویت یا مدیریت خطا به‌ازای هر فراخوانی RPC استفاده می‌شود چیست؟</span></div>
+            <div class="qa-a">ب) Interceptor</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۹</span><span>کدام بخش از ASP.NET Core وظیفهٔ گوش دادن و میزبانی کانکشن‌های HTTP/2 سازگار با gRPC را در سطح وب‌سرور بر عهده دارد؟</span></div>
+            <div class="qa-a">ب) Kestrel Web Server با فعال بودن پروتکل HTTP/2</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۲۰</span><span>در کلاینت دات‌نت (<code>Grpc.Net.Client</code>)، مدیریت چرخهٔ حیات اتصال و کانکشن‌های سوکت طولانی‌مدت به سرور بر عهدهٔ کدام شیء است؟</span></div>
+            <div class="qa-a">الف) <code>GrpcChannel</code></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive A 1-2 -->
+    <section class="slide qa-slide" data-title="تشریحی ۱ و ۲">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — ASP.NET Core و کلاینت</h1>
+          <span class="qa-kicker">بخش دوم · ۱ و ۲ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱</span><span>در کانفیگ Kestrel برای سرویس‌های gRPC چه نکته‌ای حیاتی است و پروتکل پیش‌فرض چگونه مدیریت می‌شود؟</span></div>
+            <div class="qa-a">سرویس‌های gRPC به بستر HTTP/2 نیاز دارند؛ بنابراین Kestrel باید صراحتاً برای پشتیبانی از <code>HttpProtocols.Http2</code> تنظیم شود. بدون فعال‌سازی TLS، مذاکرهٔ ALPN انجام نمی‌شود و کلاینت‌ها نمی‌توانند به سرور متصل شوند؛ در نتیجه سرور باید یا از TLS استفاده کند یا در حالت Cleartext (H2C) کانفیگ شود.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۲</span><span>تفاوت عملکردی دو متد <code>builder.Services.AddGrpc()</code> و <code>app.MapGrpcService&lt;T&gt;()</code> چیست؟</span></div>
+            <div class="qa-a">متد <code>AddGrpc</code> سرویس‌های زیرساختی مانند کدک‌های Protobuf، اکتیویتورها، اینترسپتورها و ولیدیشن را در کانتینر DI رجیستر می‌کند. در مقابل، <code>MapGrpcService</code> پیاده‌سازی کلاس سرویس را در Routing پایپ‌لاین دات‌نت نگاشت می‌کند. مسیر نهایی URL بر مبنای نام Package، Service و Method تعریف‌شده در فایل <code>.proto</code> به‌صورت <code>/{package}.{service}/{method}</code> ساخته می‌شود.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive A 3-4 -->
+    <section class="slide qa-slide" data-title="تشریحی ۳ و ۴">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — ASP.NET Core و کلاینت</h1>
+          <span class="qa-kicker">بخش دوم · ۳ و ۴ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۳</span><span>تفاوت استفاده از gRPC Interceptor با ASP.NET Core Middleware در چیست؟</span></div>
+            <div class="qa-a">میدل‌ورهای دات‌نت در سطح پایین‌تر و روی <code>HttpContext</code> عمومی کار می‌کنند و فقط مختص سمت سرور هستند. در مقابل، Interceptorها هم در کلاینت و هم در سرور قابل استفاده‌اند و دسترسی کاملی به پیام‌های Strongly-typed و متادیتاهای اختصاصی RPC دارند. لاگ‌گذاری جزئیات پیام، کشینگ خروجی متدها یا مدیریت خطا در ساختار <code>RpcException</code> با Interceptor اصولی‌تر انجام می‌شود.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۴</span><span>مهم‌ترین اصل حفظ Backward Compatibility در فیلدهای Protobuf چیست و کلمهٔ کلیدی <code>reserved</code> چه نقشی دارد؟</span></div>
+            <div class="qa-a">در Protobuf شمارهٔ فیلد (Field Tag) شناسهٔ هویتی داده در حالت باینری است؛ بنابراین شماره یا نوع فیلدهای موجود هرگز نباید تغییر کند. اگر فیلدی حذف شود، شماره و نام آن باید با کلمهٔ کلیدی <code>reserved</code> مشخص شود تا توسعه‌دهندگان در آینده ناخواسته از همان شماره برای فیلد جدید استفاده نکنند و کلاینت‌های قدیمی دچار ناسازگاری و خواندن دادهٔ اشتباه نشوند.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive A 5-6 -->
+    <section class="slide qa-slide" data-title="تشریحی ۵ و ۶">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — ASP.NET Core و کلاینت</h1>
+          <span class="qa-kicker">بخش دوم · ۵ و ۶ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۵</span><span>برای تغییرات ناسازگار (Breaking Changes)، چه الگویی برای Versioning پکیج‌های Protobuf توصیه می‌شود؟</span></div>
+            <div class="qa-a">استاندارد صنعت، تفکیک بر مبنای فضای نام و پکیج (Package Versioning) است؛ مثلاً <code>package order.v1;</code> در نسخهٔ اول و <code>package order.v2;</code> در نسخهٔ جدید. با این رویکرد، Kestrel متدهای هر دو نسخه را هم‌زمان روی Routeهای مجزا سرویس‌دهی می‌کند. این کار امکان هم‌زیستی نسخه‌ها (Coexistence) و مهاجرت تدریجی کلاینت‌ها بدون Downtime را فراهم می‌کند.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۶</span><span>هنگام اضافه کردن فیلد جدید به یک Contract در Protobuf، کلاینت‌های قدیمی و جدید چگونه با آن رفتار می‌کنند؟</span></div>
+            <div class="qa-a">اگر کلاینت با Contract قدیمی پیامی دریافت کند که فیلد جدیدی دارد، موتور Protobuf فیلد ناشناخته را نادیده می‌گیرد و آن را به‌عنوان Unknown Field نگه می‌دارد. همچنین اگر کلاینت جدید با Contract به‌روز پیامی بدون فیلد جدید دریافت کند، مقدار پیش‌فرض دیتاتایپ (مانند <code>0</code>، <code>""</code> یا <code>false</code>) به فیلد اختصاص می‌یابد؛ بنابراین سازگاری دوطرفه حفظ می‌شود.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive A 7-8 -->
+    <section class="slide qa-slide" data-title="تشریحی ۷ و ۸">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — ASP.NET Core و کلاینت</h1>
+          <span class="qa-kicker">بخش دوم · ۷ و ۸ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۷</span><span>طول عمر شیء <code>GrpcChannel</code> در کلاینت باید چگونه باشد و ایجاد مکرر آن چه پیامدی دارد؟</span></div>
+            <div class="qa-a">شیء <code>GrpcChannel</code> بسیار سنگین است و کانکشن‌های سوکت و هندشیک‌های HTTP/2 را مدیریت می‌کند؛ لذا باید به‌صورت Singleton و با طول عمر طولانی (Long-lived) نگه داشته شود. ایجاد مکرر کانال با هر درخواست باعث تخلیهٔ منابع سوکت سیستم‌عامل (Socket Exhaustion)، کندی محسوس و افزایش شدید تأخیر (Latency) می‌شود.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۸</span><span>استفاده از <code>AddGrpcClient&lt;T&gt;</code> (gRPC Client Factory) چه برتری‌هایی نسبت به ساخت مستقیم کلاینت دارد؟</span></div>
+            <div class="qa-a">این کتابخانه مدیریت بهینهٔ چرخهٔ حیات <code>HttpMessageHandler</code> و چرخش اتصال‌ها را به‌طور خودکار انجام می‌دهد و مانع مشکلات DNS و Socket Exhaustion می‌شود. همچنین امکان تزریق کلاینت‌ها (DI) در لایه‌های مختلف را فراهم کرده و پیکربندی Interceptorها، لاگینگ و سیاست‌های Resilience (مانند Polly) را بسیار متمرکز و ساده می‌کند.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive A 9-10 -->
+    <section class="slide qa-slide" data-title="تشریحی ۹ و ۱۰">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — ASP.NET Core و کلاینت</h1>
+          <span class="qa-kicker">بخش دوم · ۹ و ۱۰ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۹</span><span>تفاوت مفهوم Deadline در کلاینت gRPC با Timeout معمولی در کلاینت‌های HTTP سنتی چیست؟</span></div>
+            <div class="qa-a">Timeout یک مدت‌زمان نسبی برای یک درخواست است، اما Deadline یک زمان قطعی در آینده (Point in Time) تعیین می‌کند. این زمان انقضا از طریق متادیتای <code>grpc-timeout</code> در سراسر زنجیرهٔ ریزسرویس‌ها (Call Graph) منتشر (Propagate) می‌شود. اگر سرور متوجه شود ددلاین گذشته است، فوراً پردازش را متوقف می‌کند تا از مصرف بیهودهٔ منابع پردازشی جلوگیری شود.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۰</span><span>هنگام فراخوانی سرویس‌های بدون TLS (مانند Cleartext H2C در محیط Development) توسط کلاینت دات‌نت، چه تنظیمی لازم است؟</span></div>
+            <div class="qa-a">به‌طور پیش‌فرض دات‌نت ارتباط HTTP/2 روی بستر ناامن (بدون TLS) را مسدود می‌کند و خطای پروتکل پرتاب می‌شود. برای رفع این مشکل در محیط‌های لوکال، باید در شروع برنامه این سوئیچ فعال شود تا اتصال بدون رمزنگاری برقرار گردد:
+              <pre><code>AppContext.SetSwitch(
+    "System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive B 1-2 -->
+    <section class="slide qa-slide" data-title="تشریحی پروتکل ۱ و ۲">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — پروتکل و Protobuf</h1>
+          <span class="qa-kicker">بخش سوم · ۱ و ۲ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱</span><span>چرا gRPC روی HTTP/2 پیاده‌سازی شده و مفهوم Multiplexing در آن چیست؟</span></div>
+            <div class="qa-a">پروتکل HTTP/2 امکان ارسال چندین درخواست و پاسخ هم‌زمان را روی یک اتصال TCP واحد (Single TCP Connection) در قالب استریم‌های مجزا فراهم می‌کند. این قابلیت که مالتی‌پلکسینگ (Multiplexing) نام دارد، مشکل مسدود شدن صف در لایهٔ اپلیکیشن (Head-of-Line Blocking) را برطرف کرده و مصرف منابع و تأخیر اتصال را به حداقل می‌رساند.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۲</span><span>تفاوت فریم‌های Headers و Trailers در gRPC چیست و چرا وجود Trailers حیاتی است؟</span></div>
+            <div class="qa-a">فریم Headers در ابتدای ارتباط و قبل از شروع بدنه ارسال می‌شود، اما Trailers در انتهای پیام و پس از بسته شدن بدنه یا استریم ارسال می‌گردد. gRPC وضعیت نهایی اجرای متد (کد وضعیت یا <code>grpc-status</code> و متن خطا) را در تریلر قرار می‌دهد. این ساختار به سرور اجازه می‌دهد حتی در حین پردازش یا استریم داده، وضعیت نهایی را پس از پایان کار به کلاینت اعلام کند.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive B 3-4 -->
+    <section class="slide qa-slide" data-title="تشریحی پروتکل ۳ و ۴">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — پروتکل و Protobuf</h1>
+          <span class="qa-kicker">بخش سوم · ۳ و ۴ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۳</span><span>انواع الگوهای ارتباطی (RPC Types) در استاندارد gRPC کدامند؟</span></div>
+            <div class="qa-a">چهار الگوی اصلی وجود دارد: Unary (یک درخواست، یک پاسخ)، Server Streaming (یک درخواست، دریافت دنباله‌ای از پاسخ‌ها)، Client Streaming (ارسال جریانی از داده‌ها، یک پاسخ در انتها) و Bidirectional Streaming (ارسال و دریافت هم‌زمان و مستقل پیام‌ها توسط هر دو طرف). انتخاب هر مدل متناسب با حجم داده و میزان بلادرنگ (Real-time) بودن سناریو انجام می‌شود.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۴</span><span>در gRPC وضعیت موفقیت یا شکست چگونه اعلام می‌شود و چه تفاوتی با استاتوس‌کدهای استاندارد HTTP دارد؟</span></div>
+            <div class="qa-a">در یک ارتباط موفق شبکه، کد وضعیت HTTP همواره <code>200 OK</code> است و نتیجهٔ منطق برنامه از طریق کدهای استاندارد gRPC (مانند <code>OK</code>، <code>NOT_FOUND</code> یا <code>UNAVAILABLE</code>) داخل هدر/تریلر بازگردانده می‌شود. این تفکیک باعث می‌شود خطاهای لایهٔ زیرساخت و پروکسی از خطاهای سطح دامنه و سرویس جدا شوند و رفتار کلاینت‌ها در زبان‌های مختلف کاملاً یکپارچه باشد.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive B 5-6 -->
+    <section class="slide qa-slide" data-title="تشریحی پروتکل ۵ و ۶">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — پروتکل و Protobuf</h1>
+          <span class="qa-kicker">بخش سوم · ۵ و ۶ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۵</span><span>اهمیت شماره فیلدها (Field Numbers یا Tags) در پروتوباف چیست و چرا نباید تغییر کنند؟</span></div>
+            <div class="qa-a">در زمان سریالایز، نام فیلدها ارسال نمی‌شود و فقط شمارهٔ فیلد به همراه متادیتا به‌عنوان کلید داده در بایت‌ها ذخیره می‌گردد. تغییر شمارهٔ فیلد موجود، سازگاری باینری را از بین می‌برد و باعث خوانده نشدن یا تخریب داده در نسخه‌های دیگر می‌شود. ضمناً شماره‌های ۱ تا ۱۵ به دلیل اشغال تنها یک بایت در انکودینگ، باید به فیلدهای پرتکرار اختصاص یابند.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۶</span><span>قوانین طلایی برای حفظ Backward و Forward Compatibility در پروتوباف چیستند؟</span></div>
+            <div class="qa-a">هرگز نباید شماره یا نوع دادهٔ فیلدهای موجود را تغییر داد یا شماره‌ها را مجدداً استفاده کرد. در صورت نیاز به حذف یک فیلد، شماره و نام آن باید با کلیدواژهٔ <code>reserved</code> قفل شود تا از تخصیص تصادفی در آینده جلوگیری شود. فیلدهای جدید نیز همیشه باید با شماره‌های استفاده‌نشده تعریف شوند؛ کلاینت‌های قدیمی فیلدهای ناشناخته را نادیده می‌گیرند و متوقف نمی‌شوند.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive B 7-8 -->
+    <section class="slide qa-slide" data-title="تشریحی پروتکل ۷ و ۸">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — پروتکل و Protobuf</h1>
+          <span class="qa-kicker">بخش سوم · ۷ و ۸ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۷</span><span>مکانیزم انکودینگ اعداد در Protobuf (مانند Varint و ZigZag) چگونه به فشرده‌سازی کمک می‌کند؟</span></div>
+            <div class="qa-a">پروتوباف برای انواع عددی صحیح از Varint استفاده می‌کند که طول بایت متغیر دارد و برای اعداد کوچک به‌جای ۴ یا ۸ بایت، تنها یک بایت مصرف می‌کند. برای اعداد منفی، نوع <code>int32</code> معمولاً ۱۰ بایت فضا می‌گیرد؛ از این رو استفاده از <code>sint32</code> با انکودینگ ZigZag اعداد منفی را به مقادیر کوچک مثبت نگاشت می‌کند تا حجم شبکه به حداقل برسد.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۸</span><span>مفهوم مقادیر پیش‌فرض در proto3 چگونه است و مدیریت مقادیر Null (یا عدم حضور فیلد) چطور انجام می‌شود؟</span></div>
+            <div class="qa-a">در proto3 مقادیر پیش‌فرض فیلدها (مانند ۰، رشتهٔ خالی یا <code>false</code>) روی شبکه ارسال نمی‌شوند، بنابراین تفاوت مقدار پیش‌فرض با مقدار ست‌نشده مشخص نیست. برای پشتیبانی از حالت Nullable یا تشخیص صریح مقدار داشتن (Field Presence)، باید از کلیدواژهٔ <code>optional</code>، ساختار <code>oneof</code> یا Wrapperهای <code>google.protobuf</code> استفاده کرد.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Descriptive B 9-10 -->
+    <section class="slide qa-slide" data-title="تشریحی پروتکل ۹ و ۱۰">
+      <div class="content">
+        <div class="qa-head">
+          <h1>سوالات تشریحی — پروتکل و Protobuf</h1>
+          <span class="qa-kicker">بخش سوم · ۹ و ۱۰ از ۱۰</span>
+        </div>
+        <div class="qa-grid single">
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۹</span><span>انواع مجموعه‌ای (<code>repeated</code> و <code>map</code>) در سطح باینری چگونه در Protobuf ذخیره می‌شوند؟</span></div>
+            <div class="qa-a">فیلد <code>repeated</code> معادل لیست است و برای انواع اسکالر معمولاً به شکل فشرده (Packed Encoding) ذخیره می‌شود تا بایت‌های تکراری کلیدها حذف شوند. نوع <code>map&lt;K,V&gt;</code> یک قابلیت گرامری است و در لایهٔ باینری دقیقاً مانند یک <code>repeated</code> از یک Message داخلی با دو فیلد کلید (۱) و مقدار (۲) سریالایز می‌شود؛ به همین دلیل ترتیب کلیدها تضمین‌شده نیست.</div>
+          </div>
+          <div class="qa-card">
+            <div class="qa-q"><span class="qa-num">۱۰</span><span>چرا ترکیب gRPC و Protobuf سرعت پردازش و Throughput بالاتری نسبت به REST/JSON ارائه می‌دهد؟</span></div>
+            <div class="qa-a">پردازش دیتای باینری در پروتوباف مبتنی بر عملیات Shift و Mask روی بایت‌هاست و برخلاف JSON نیازی به Parsing متن، تطبیق کاراکترها و فرآیندهای سنگین رشته‌ای ندارد. همچنین حجم بسیار کمتر پیلود و فشرده‌سازی هدر با الگوریتم HPACK در HTTP/2، ترافیک شبکه و تأخیر انتقال (Latency) را به شکل چشم‌گیری کاهش می‌دهد.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing -->
     <section class="slide lead" data-title="پرسش و پاسخ">
       <div class="content">
         <div class="badge">پایان ارائه</div>
